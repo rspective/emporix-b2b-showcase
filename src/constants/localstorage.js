@@ -18,4 +18,8 @@ export const APPLICATION_ID = 'applicationId'
 export const INDEX_NAME = 'indexName'
 export const SEARCH_KEY = 'searchKey'
 
-export const CLIENT_ID = 'clientId'
+export const STOREFRONT_CLIENT_ID = 'storefrontClientId'
+
+export const EMPORIX_CLIENT_ID = 'emporixClientId'
+
+export const EMPORIX_SECRET_KEY = 'emporixSecretKey'

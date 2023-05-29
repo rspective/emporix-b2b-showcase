@@ -6,7 +6,7 @@ import {
   TENANT,
   ACCESS_TOKEN,
   SESSION_ID,
-  CLIENT_ID,
+  STOREFRONT_CLIENT_ID,
 } from '../../constants/localstorage'
 
 import { anonymousTokenApi } from '../service.config'
@@ -44,27 +44,27 @@ const AccessToken = async (tenant) => {
   }
 
   const params = {
-    client_id: localStorage.getItem(CLIENT_ID),
+    client_id: localStorage.getItem(STOREFRONT_CLIENT_ID),
     'hybris-tenant': tenant,
   }
- if (params.client_id !== null) {
-   try {
-     const res = await ApiRequest(anonymousTokenApi(), 'get', {}, {}, params)
-     localStorage.setItem(ANONYMOUS_TOKEN, res['data']['access_token'])
-     localStorage.setItem(
-         ANONYMOUS_TOKEN_EXPIRES_IN,
-         now + res['data']['expires_in'] * 1000
-     )
-     localStorage.setItem(SESSION_ID, res.data.sessionId)
-     localStorage.setItem(ACCESS_TOKEN, res['data']['access_token'])
-     return res['data']['access_token']
-   } catch (error) {
-     console.error(error)
-     localStorage.removeItem(CLIENT_ID)
-     localStorage.removeItem(TENANT)
-     window.location.replace(`/`)
-     return ''
-   }
- }
+  if (params.client_id !== null) {
+    try {
+      const res = await ApiRequest(anonymousTokenApi(), 'get', {}, {}, params)
+      localStorage.setItem(ANONYMOUS_TOKEN, res['data']['access_token'])
+      localStorage.setItem(
+        ANONYMOUS_TOKEN_EXPIRES_IN,
+        now + res['data']['expires_in'] * 1000
+      )
+      localStorage.setItem(SESSION_ID, res.data.sessionId)
+      localStorage.setItem(ACCESS_TOKEN, res['data']['access_token'])
+      return res['data']['access_token']
+    } catch (error) {
+      console.error(error)
+      localStorage.removeItem(STOREFRONT_CLIENT_ID)
+      localStorage.removeItem(TENANT)
+      window.location.replace(`/`)
+      return ''
+    }
+  }
 }
 export default AccessToken

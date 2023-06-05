@@ -82,7 +82,6 @@ const getProducts = async (page, emporixAccessToken) => {
   })
   do {
     products = await getProducts(page, emporixAccessToken)
-    throw ''
     for (const product of products) {
       const name =
         product.name?.en || product.name instanceof Object

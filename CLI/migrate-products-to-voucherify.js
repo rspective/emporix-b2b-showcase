@@ -91,7 +91,7 @@ const getProducts = async (page, emporixAccessToken) => {
         product?.data?.mixins?.productCustomAttributes?.brand
       let brandId, brandName
       if (productBrandId) {
-        const brand = await getBrand(brandId)
+        const brand = await getBrand(productBrandId)
         brandId = brand?.id
         brandName = brand?.name
       }

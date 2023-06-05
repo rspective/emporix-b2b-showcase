@@ -40,7 +40,7 @@ const getBrand = async (id) => {
     {
       method: 'Get',
       headers: {
-        Authorization: `Bearer ${emporixAccessToken}`,
+        Authorization: `Bearer ${await getEmporixAPIAccessToken()}`,
         'Content-Type': 'application/json',
       },
     }
@@ -87,8 +87,7 @@ const getProducts = async (page, emporixAccessToken) => {
         product.name?.en || product.name instanceof Object
           ? Object.entries(product.name)?.[0]?.[1]
           : undefined
-      const productBrandId =
-        product?.data?.mixins?.productCustomAttributes?.brand
+      const productBrandId = product?.mixins?.productCustomAttributes?.brand
       let brandId, brandName
       if (productBrandId) {
         const brand = await getBrand(productBrandId)

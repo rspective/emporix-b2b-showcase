@@ -1,6 +1,5 @@
 const { VoucherifyServerSide } = require('@voucherify/sdk')
 const fetch = require('node-fetch')
-const { TENANT } = require('../src/constants/localstorage')
 require('dotenv').config()
 
 const getEmporixAPIAccessToken = async () => {
@@ -31,11 +30,32 @@ const getEmporixAPIAccessToken = async () => {
   return access_token
 }
 
+const brands = {}
+const getBrand = async (id) => {
+  if (brands[id]?.name) {
+    return brands[id]
+  }
+  const brandRaw = await fetch(
+    `${process.env.REACT_APP_API_URL}/brand/brands/${id}`,
+    {
+      method: 'Get',
+      headers: {
+        Authorization: `Bearer ${emporixAccessToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  )
+  if (brandRaw.status !== 200) {
+    console.log('could not get brand')
+    return {}
+  }
+  brands[id] = brandRaw.json()
+  return brands[id]
+}
+
 const getProducts = async (page, emporixAccessToken) => {
   const resultRaw = await fetch(
-    `${process.env.REACT_APP_API_URL}/product/${localStorage.getItem(
-      TENANT
-    )}/products?pageNumber=${page}`,
+    `${process.env.REACT_APP_API_URL}/product/${process.env.REACT_APP_EMPORIX_TENANT}/products?pageNumber=${page}`,
     {
       method: 'Get',
       headers: {
@@ -62,16 +82,27 @@ const getProducts = async (page, emporixAccessToken) => {
   })
   do {
     products = await getProducts(page, emporixAccessToken)
+    throw ''
     for (const product of products) {
       const name =
         product.name?.en || product.name instanceof Object
           ? Object.entries(product.name)?.[0]?.[1]
           : undefined
+      const productBrandId =
+        product?.data?.mixins?.productCustomAttributes?.brand
+      let brandId, brandName
+      if (productBrandId) {
+        const brand = await getBrand(brandId)
+        brandId = brand?.id
+        brandName = brand?.name
+      }
       const productCreated = await voucherifyClient.products.create({
         name,
         source_id: product.id,
         metadata: {
           description: product.description,
+          brandId,
+          brandName,
         },
         image_url: product.media?.[0]?.url,
       })

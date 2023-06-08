@@ -1,4 +1,4 @@
-import { USER } from 'constants/localstorage'
+import { CUSTOMER_ADDITIONAL_METADATA, USER } from 'constants/localstorage'
 import React, {
   createContext,
   useContext,
@@ -12,6 +12,7 @@ import CartService from 'services/cart.service'
 import { useAuth } from './auth-provider'
 import { useSites } from './sites-provider'
 import { useAppContext } from './app-context'
+import { getCustomerAdditionalMetadata } from '../helpers/getCustomerAdditionalMetadata'
 
 const CartContext = createContext()
 
@@ -104,8 +105,8 @@ const CartProvider = ({ children }) => {
   }, [cartAccount.discounts])
 
   const mixins = useMemo(() => {
-    return cartAccount.metadata?.mixins || {}
-  }, [cartAccount.metadata?.mixins])
+    return cartAccount?.mixins || {}
+  }, [cartAccount?.mixins])
 
   useEffect(() => {
     syncCart()
@@ -196,8 +197,9 @@ const CartProvider = ({ children }) => {
     [cartAccount?.id]
   )
 
-  const recheckCart = async (customer) => {
-    const user = JSON.parse(localStorage.getItem(USER))
+  const recheckCart = async () => {
+    let user = JSON.parse(localStorage.getItem(USER))
+    const customerAdditionalMetadata = getCustomerAdditionalMetadata()
     if (!cartAccount?.id) {
       return {
         inapplicableCoupons: [],
@@ -205,7 +207,8 @@ const CartProvider = ({ children }) => {
     }
     const cartAndInapplicableCoupons = await CartService.recheckCart(
       cartAccount.id,
-      customer || user || {}
+      user || {},
+      customerAdditionalMetadata || {}
     )
     if (cartAndInapplicableCoupons.cart) {
       setCartAccount({

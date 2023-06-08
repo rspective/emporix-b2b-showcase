@@ -42,6 +42,7 @@ export const buildIntegrationCartFromEmporixCart = ({
   codesToRemove,
   newPromotionCodes,
   customer,
+  customerAdditionalMetadata,
 }) => {
   const newPromotionsObjects =
     newPromotionCodes?.map((code) => {
@@ -59,9 +60,9 @@ export const buildIntegrationCartFromEmporixCart = ({
       }
     }) || []
   const currentlyAppliedCoupons = Array.isArray(
-    emporixCart.metadata?.mixins?.appliedCoupons
+    emporixCart?.mixins?.voucherify?.appliedCoupons
   )
-    ? emporixCart.metadata?.mixins?.appliedCoupons
+    ? emporixCart?.mixins?.voucherify?.appliedCoupons
     : []
   const deletedCodesObjects =
     codesToRemove?.map((code) => {
@@ -88,8 +89,11 @@ export const buildIntegrationCartFromEmporixCart = ({
 
   return {
     id: emporixCart.id,
-    customer: mapEmporixUserToVoucherifyCustomer(customer),
-    sessionKey: emporixCart.metadata?.mixins?.sessionKey,
+    customer: mapEmporixUserToVoucherifyCustomer(
+      customer,
+      customerAdditionalMetadata
+    ),
+    sessionKey: emporixCart?.mixins?.voucherify?.sessionKey,
     items: mapEmporixItemsToVoucherifyProducts(emporixCart?.items || []),
     coupons,
   }

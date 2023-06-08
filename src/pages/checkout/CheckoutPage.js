@@ -20,12 +20,10 @@ import { useAuth } from '../../context/auth-provider'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
 import { Qualification } from '../shared/Qualification'
 import { getCart } from '../../integration/emporix/emporixApi'
-import {
-  buildIntegrationCartFromEmporixCart,
-  mapEmporixItemsToVoucherifyProducts,
-} from '../../integration/buildIntegrationCartFromEmporixCart'
+import { mapEmporixItemsToVoucherifyProducts } from '../../integration/buildIntegrationCartFromEmporixCart'
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
 import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
+import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 
 const PaymentAction = ({ action, disabled }) => {
   return (
@@ -257,7 +255,10 @@ const CheckoutPage = () => {
       if (!cartAccount?.id) {
         return
       }
-      const customer = mapEmporixUserToVoucherifyCustomer(user)
+      const customer = mapEmporixUserToVoucherifyCustomer(
+        user,
+        getCustomerAdditionalMetadata()
+      )
       const emporixCart = await getCart(cartAccount.id)
       const items = mapItemsToVoucherifyOrdersItems(
         mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])

@@ -28,7 +28,7 @@ const getQualificationsWithItems = async (
   const qualificationsResponse = await voucherifyFetchAPI({
     body: {
       scenario, // ALL, CUSTOMER_WALLET, AUDIENCE_ONLY, PRODUCTS, PRODUCTS_DISCOUNTS, PROMOTION_STACKS
-      mode: 'BASIC', // hidden: BASIC, ADVANCED
+      mode: 'ADVANCED', // hidden: BASIC, ADVANCED
       order: {
         items,
         customer,
@@ -59,7 +59,7 @@ const getPromotionTiersOrVoucher = async (qualification) => {
       path: `promotions/tiers/${encodeURIComponent(qualification.id)}`,
     })
     if (response.status !== 200) {
-      return
+      return {}
     }
     return { ...(await response.json()), qualification }
   }
@@ -69,11 +69,11 @@ const getPromotionTiersOrVoucher = async (qualification) => {
       path: `vouchers/${encodeURIComponent(qualification.id)}`,
     })
     if (response.status !== 200) {
-      return
+      return {}
     }
     return { ...(await response.json()), qualification }
   }
-  return
+  return {}
 }
 
 export const getPromotionTiersOrVoucherAddCMSEntryIfPossible = async (
@@ -154,7 +154,9 @@ export const getQualificationsWithItemsExtended = async (
     qualifications,
     getPromotionTiersOrVoucherAddCMSEntryIfPossible
   )
-  return qualificationsExtended.filter((e) => e)
+  return qualificationsExtended.filter(
+    (promotionOrVoucher) => promotionOrVoucher?.id
+  )
 }
 
 export const voucherifyFetchAPI = async ({ body, method = 'GET', path }) => {
@@ -170,20 +172,19 @@ export const voucherifyFetchAPI = async ({ body, method = 'GET', path }) => {
 }
 
 export const validateStackableVouchers = async (request) => {
-  if (request.customer?.source_id) {
-    getClient().customers.create({ ...(request.customer || {}) })
-  }
   return await getClient().validations.validateStackable(request)
 }
 
 export const getAvailablePromotions = async (cart) => {
   const items = mapItemsToVoucherifyOrdersItems(cart.items)
-  return await asyncMap(
-    (
-      await getAllQualificationsWithItems('ALL', items, cart.customer)
-    ).filter((qualification) => qualification?.object === 'promotion_tier'),
-    getPromotionTiersOrVoucherAddCMSEntryIfPossible
-  )
+  return (
+    await asyncMap(
+      (
+        await getAllQualificationsWithItems('ALL', items, cart.customer)
+      ).filter((qualification) => qualification?.object === 'promotion_tier'),
+      getPromotionTiersOrVoucherAddCMSEntryIfPossible
+    )
+  ).filter((promotion_tier) => promotion_tier.id)
 }
 
 export const releaseValidationSession = async (codes, sessionKey) => {

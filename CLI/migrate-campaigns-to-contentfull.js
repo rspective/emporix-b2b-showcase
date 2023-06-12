@@ -49,6 +49,20 @@ const getAllCampaigns = async () => {
     allCampaigns = [...allCampaigns, ...campaigns]
     page++
   } while (campaigns.length !== 0)
+  campaign_type = 'LOYALTY_PROGRAM'
+  page = 1
+  do {
+    campaigns = await getCampaigns(page, campaign_type)
+    allCampaigns = [...allCampaigns, ...campaigns]
+    page++
+  } while (campaigns.length !== 0)
+  campaign_type = 'LUCKY_DRAW'
+  page = 1
+  do {
+    campaigns = await getCampaigns(page, campaign_type)
+    allCampaigns = [...allCampaigns, ...campaigns]
+    page++
+  } while (campaigns.length !== 0)
   return allCampaigns
 }
 

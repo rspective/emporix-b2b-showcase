@@ -69,6 +69,7 @@ const getProducts = async (page, emporixAccessToken) => {
   }
   return await resultRaw.json()
 }
+//
 
 exports.migrateProductsToVoucherify = async () => {
   const emporixAccessToken = await getEmporixAPIAccessToken()

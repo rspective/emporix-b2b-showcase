@@ -23,17 +23,7 @@ app.use((req, res, next) => {
   express.json()(req, res, next)
 })
 
-const options = {
-  dotfiles: 'ignore',
-  etag: false,
-  extensions: ['htm', 'html'],
-  index: false,
-  maxAge: '1d',
-  redirect: false,
-}
-app.use(express.static('build', options))
-
-app.get(`/${process.env.SECRET_PATH}*`, (req, res) => {
+app.get(`/*`, (req, res) => {
   res.sendFile(path.resolve(__dirname, 'build', 'index.html'))
 })
 
@@ -58,6 +48,16 @@ app.get('/migrate-all-products', async (req, res) => {
   }
   return
 })
+
+const options = {
+  dotfiles: 'ignore',
+  etag: false,
+  extensions: ['htm', 'html'],
+  index: false,
+  maxAge: '1d',
+  redirect: false,
+}
+app.use(express.static('build', options))
 
 const PORT = process.env.PORT || 5555
 

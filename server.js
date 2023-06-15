@@ -23,10 +23,6 @@ app.use((req, res, next) => {
   express.json()(req, res, next)
 })
 
-app.get(`/*`, (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'build', 'index.html'))
-})
-
 app.get('/migrate-all-promotions', async (req, res) => {
   res.json({ success: true, operation: 'started' })
   try {
@@ -39,7 +35,7 @@ app.get('/migrate-all-promotions', async (req, res) => {
   return
 })
 
-app.get('/migrate-all-products', async (req, res) => {
+app.get('/hidden-migrate-all-products', async (req, res) => {
   res.json({ success: true, operation: 'started' })
   try {
     await migrateProductsToVoucherify()
@@ -58,6 +54,9 @@ const options = {
   redirect: false,
 }
 app.use(express.static('build', options))
+app.get(`/*`, (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'build', 'index.html'))
+})
 
 const PORT = process.env.PORT || 5555
 

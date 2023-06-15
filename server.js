@@ -23,7 +23,7 @@ app.use((req, res, next) => {
   express.json()(req, res, next)
 })
 
-app.get('/migrate-all-promotions', async (req, res) => {
+app.get('/hidden-migrate-all-promotions', async (req, res) => {
   res.json({ success: true, operation: 'started' })
   try {
     await migrateCampaignsToContentful()

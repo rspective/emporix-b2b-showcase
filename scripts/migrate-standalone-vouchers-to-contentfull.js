@@ -1,48 +1,46 @@
-const fetch = require('node-fetch')
 const contentful = require('contentful-management')
 require('dotenv').config()
-const voucherifyFetchAPI = async ({ body, method = 'GET', path }) => {
-  return await fetch(`https://dev.api.voucherify.io/v1/${path}`, {
-    method,
-    body: body ? JSON.stringify(body) : undefined,
-    headers: {
-      'X-App-Id': process.env.REACT_APP_VOUCHERIFY_APP_ID,
-      'X-App-Token': process.env.REACT_APP_VOUCHERIFY_SECRET_KEY,
-      'Content-Type': 'application/json',
-    },
-  })
-}
+const { VoucherifyServerSide } = require('@voucherify/sdk')
 
-const getPromotions = async (page) => {
+const voucherifyClient = VoucherifyServerSide({
+  applicationId: process.env.REACT_APP_VOUCHERIFY_APP_ID,
+  secretKey: process.env.REACT_APP_VOUCHERIFY_SECRET_KEY,
+  apiUrl: process.env.REACT_APP_VOUCHERIFY_API_URL,
+})
+
+const getVouchers = async (page) => {
   const limit = 100
-  const resultRaw = await voucherifyFetchAPI({
-    path: `promotions/tiers?is_available=true&limit=${limit}&page=${page}`,
-    method: 'GET',
-  })
-  const result = await resultRaw.json()
-  return result?.tiers || []
+  return (
+    (
+      await voucherifyClient.vouchers.list({
+        limit,
+        page,
+        filters: {
+          campaigns: {
+            conditions: {
+              $is_unknown: [true],
+            },
+          },
+        },
+      })
+    )?.vouchers || []
+  )
 }
 
-const getAllPromotions = async () => {
+const getAllVouchers = async () => {
   let page = 1
-  let allPromotions = []
-  let promotions = []
+  let allVouchers = []
+  let vouchers = []
   do {
-    promotions = await getPromotions(page)
-    allPromotions = [...allPromotions, ...promotions]
+    vouchers = await getVouchers(page)
+    allVouchers = [...allVouchers, ...vouchers]
     page++
-  } while (promotions.length !== 0)
-  return allPromotions
+  } while (vouchers.length !== 0)
+  return allVouchers
 }
 
-const updatePromotionTiersMetadata = async (promotionId, metadata) => {
-  await voucherifyFetchAPI({
-    method: 'PUT',
-    body: {
-      metadata,
-    },
-    path: `promotions/tiers/${promotionId}`,
-  })
+const updateVoucherMetadata = async (code, metadata) => {
+  await voucherifyClient.vouchers.update({ code, metadata })
 }
 
 const contentfulClient = contentful.createClient({
@@ -79,18 +77,18 @@ const getAllContentfulLocales = async () => {
   return allLocales
 }
 
-const getPromotionModelId = async () => {
+const getStandaloneVoucherModelId = async () => {
   if (promotionModelId) {
     return promotionModelId
   }
   promotionModelId = (await contentfulEnvironment.getContentTypes()).items.find(
-    (item) => item.name === 'promotion_tier'
+    (item) => item.name === 'standalone voucher'
   )?.sys?.id
   return promotionModelId
 }
 
 const promotionModelSchema = [
-  { type: 'Text', name: 'name' },
+  { type: 'Text', name: 'code' },
   { type: 'Text', name: 'description' },
   { type: 'Text', name: 'termsAndConditions' },
 ]
@@ -131,28 +129,27 @@ const createContent = async (
   })
 }
 
-export const migratePromotionTiersToContentful = async () => {
-  const promotions = await getAllPromotions()
+exports.migrateStandaloneVouchersToContentful = async () => {
+  const vouchers = await getAllVouchers()
   await createContentfulEnvironment()
-  for (const promotion of promotions) {
-    if (promotion?.metadata?.contentfulEntryId) {
+  for (const voucher of vouchers) {
+    if (voucher?.metadata?.contentfulEntryId) {
       continue
     }
-    const name = promotion.banner || promotion.name || ''
+    const code = voucher.code
     const contentfulEntry = await createContent(
       await getContentfulEnvironment(),
-      { name },
-      await getPromotionModelId(),
+      { code },
+      await getStandaloneVoucherModelId(),
       await getAllContentfulLocales()
     )
     const contentfulEntryId = contentfulEntry?.sys?.id
     if (!contentfulEntryId) {
       continue
     }
-    await updatePromotionTiersMetadata(promotion.id, {
-      ...(promotion?.metadata || {}),
+    await updateVoucherMetadata(code, {
+      ...(voucher?.metadata || {}),
       contentfulEntryId,
     })
   }
 }
-migratePromotionTiersToContentful()

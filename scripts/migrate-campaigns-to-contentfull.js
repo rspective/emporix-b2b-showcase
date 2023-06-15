@@ -148,7 +148,7 @@ const createContent = async (
   })
 }
 
-export const migrateCampaignsToContentful = async () => {
+exports.migrateCampaignsToContentful = async () => {
   const campaigns = await getAllCampaigns()
   await getContentfulEnvironment()
   for (const campaign of campaigns.filter((campaign) => !campaign.protected)) {
@@ -177,5 +177,3 @@ export const migrateCampaignsToContentful = async () => {
     }
   }
 }
-
-migrateCampaignsToContentful()

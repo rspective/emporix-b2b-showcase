@@ -70,7 +70,7 @@ const getProducts = async (page, emporixAccessToken) => {
   return await resultRaw.json()
 }
 
-export const migrateProductsToVoucherify = async () => {
+exports.migrateProductsToVoucherify = async () => {
   const emporixAccessToken = await getEmporixAPIAccessToken()
   let productNumber = 1
   let page = 1

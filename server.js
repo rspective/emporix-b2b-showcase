@@ -5,16 +5,16 @@ const dotenv = require('dotenv')
 const path = require('path')
 const {
   migrateCampaignsToContentful,
-} = require('./CLI/migrate-campaigns-to-contentfull')
+} = require('./scripts/migrate-campaigns-to-contentfull')
 const {
   migratePromotionTiersToContentful,
-} = require('./CLI/migrate-promotion-tiers-to-contentfull')
+} = require('./scripts/migrate-promotion-tiers-to-contentfull')
 const {
   migrateStandaloneVouchersToContentful,
-} = require('./CLI/migrate-standalone-vouchers-to-contentfull')
+} = require('./scripts/migrate-standalone-vouchers-to-contentfull')
 const {
   migrateProductsToVoucherify,
-} = require('./CLI/migrate-products-to-voucherify')
+} = require('./scripts/migrate-products-to-voucherify')
 dotenv.config()
 // const checkExpiredEmailValidation = require("./modules/checkExpiredEmailValidation");
 app.use(express.urlencoded({ extended: false }))

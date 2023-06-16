@@ -67,7 +67,7 @@ const AccessToken = async (tenant) => {
       console.error(error)
       localStorage.removeItem(CLIENT_ID)
       localStorage.removeItem(TENANT)
-      window.location.replace(`/`)
+      // window.location.replace(`/`)
       return ''
     }
   }

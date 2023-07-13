@@ -108,6 +108,7 @@ exports.migrateProductsToVoucherify = async () => {
       })
       if (productCreated) {
         if (productNumber % 80 === 0) {
+          console.log('Waiting 5 seconds due to emporix rate limiter')
           await sleep(5000)
         }
         console.log(`Product ${productNumber} created successfully`)

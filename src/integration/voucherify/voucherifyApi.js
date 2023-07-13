@@ -160,7 +160,7 @@ export const getQualificationsWithItemsExtended = async (
 }
 
 export const voucherifyFetchAPI = async ({ body, method = 'GET', path }) => {
-  return await fetch(`https://dev.api.voucherify.io/v1/${path}`, {
+  return await fetch(`${process.env.REACT_APP_VOUCHERIFY_API_URL}/v1/${path}`, {
     method,
     body: body ? JSON.stringify(body) : undefined,
     headers: {

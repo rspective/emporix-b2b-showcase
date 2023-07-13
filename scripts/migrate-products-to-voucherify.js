@@ -2,6 +2,8 @@ const { VoucherifyServerSide } = require('@voucherify/sdk')
 const fetch = require('node-fetch')
 require('dotenv').config()
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
 const getEmporixAPIAccessToken = async () => {
   const formData = {
     client_id: process.env.REACT_APP_EMPORIX_CLIENT_ID,
@@ -105,6 +107,9 @@ exports.migrateProductsToVoucherify = async () => {
         image_url: product.media?.[0]?.url,
       })
       if (productCreated) {
+        if (productNumber % 80 === 0) {
+          await sleep(5000)
+        }
         console.log(`Product ${productNumber} created successfully`)
         productNumber++
       }

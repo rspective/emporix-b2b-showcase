@@ -123,6 +123,7 @@ See `readme-images/Contentful-X.png` for more information.
   - `REACT_APP_CONTENTFUL_PREVIEW_API_ACCESS_TOKEN` - Contentful Content Preview API - access token
   - `REACT_APP_CONTENTFUL_DELIVERY_API_ACCESS_TOKEN` - Contentful Content Delivery API - access token
   - `REACT_APP_CONTENTFUL_SPACE_ID` - Contentful Space ID
+  - `REACT_APP_VOUCHERIFY_QUALIFICATION_MODE_ADVANCED` - If `true`, will use qualification ADVANCED method 
 
 ### 2.2.3. Commands
 

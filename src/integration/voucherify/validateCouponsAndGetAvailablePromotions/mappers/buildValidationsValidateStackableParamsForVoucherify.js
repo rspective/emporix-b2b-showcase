@@ -1,3 +1,5 @@
+import {getCustomerAdditionalMetadata} from "../../../../helpers/getCustomerAdditionalMetadata";
+
 export function buildValidationsValidateStackableParamsForVoucherify(
   coupons,
   cart,
@@ -5,6 +7,8 @@ export function buildValidationsValidateStackableParamsForVoucherify(
   orderId,
   status
 ) {
+  const customerMetadata = cart.customer?.metadata || {}
+
   return {
     // options?: StackableOptions;
     redeemables: coupons.map((code) => {
@@ -24,6 +28,11 @@ export function buildValidationsValidateStackableParamsForVoucherify(
       discount_amount: 0,
       items,
       status,
+      metadata: {
+        ...getCustomerAdditionalMetadata(),
+        preferredCurrency: customerMetadata.preferredCurrency,
+        preferredLanguage: customerMetadata.preferredLanguage,
+      }
     },
     customer: cart.customer,
   }

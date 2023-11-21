@@ -1,6 +1,7 @@
 import { mapItemsToVoucherifyOrdersItems } from './validateCouponsAndGetAvailablePromotions/mappers/product'
 import { VoucherifyServerSide } from '@voucherify/sdk'
 import getContentfulEntryFields from './getContentfulEntryFields'
+import {getCustomerAdditionalMetadata} from "../../helpers/getCustomerAdditionalMetadata";
 
 export function asyncMap(arr, asyncFn) {
   return Promise.all(arr.map(asyncFn))
@@ -25,6 +26,8 @@ const getQualificationsWithItems = async (
   customer,
   cursor
 ) => {
+  const customerMetadata = customer?.metadata || {}
+
   const qualificationsResponse = await voucherifyFetchAPI({
     body: {
       scenario, // ALL, CUSTOMER_WALLET, AUDIENCE_ONLY, PRODUCTS, PRODUCTS_DISCOUNTS, PROMOTION_STACKS
@@ -35,6 +38,11 @@ const getQualificationsWithItems = async (
       order: {
         items,
         customer,
+        metadata: {
+          ...getCustomerAdditionalMetadata(),
+          preferredCurrency: customerMetadata.preferredCurrency,
+          preferredLanguage: customerMetadata.preferredLanguage,
+        }
       },
       customer,
       options: {

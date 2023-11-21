@@ -121,8 +121,7 @@ const ProductListItems = ({ products, auth, displayType }) => {
 
     ;(async () => {
       const customer = mapEmporixUserToVoucherifyCustomer(
-        user,
-        getCustomerAdditionalMetadata()
+        user
       )
       const allQualifications = await getQualificationsWithItemsExtended(
         'PRODUCTS',

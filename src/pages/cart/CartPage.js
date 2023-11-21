@@ -107,8 +107,7 @@ const CartPage = () => {
       }
       setCartId(cartAccount?.id)
       const customer = mapEmporixUserToVoucherifyCustomer(
-        user,
-        getCustomerAdditionalMetadata()
+        user
       )
       const emporixCart = await getCart(cartAccount.id)
       const items = mapItemsToVoucherifyOrdersItems(

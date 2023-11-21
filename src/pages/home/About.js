@@ -36,8 +36,7 @@ const About = () => {
   useEffect(() => {
     ;(async () => {
       const customer = mapEmporixUserToVoucherifyCustomer(
-        user,
-        getCustomerAdditionalMetadata()
+        user
       )
       setQualifications(
         await getQualificationsWithItemsExtended('AUDIENCE_ONLY', [], customer)

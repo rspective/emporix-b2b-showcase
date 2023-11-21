@@ -40,8 +40,7 @@ export const ProductDetails = () => {
     setQualifications([])
     ;(async () => {
       const customer = mapEmporixUserToVoucherifyCustomer(
-        user,
-        getCustomerAdditionalMetadata()
+        user
       )
       setQualifications(
         await getQualificationsWithItemsExtended(

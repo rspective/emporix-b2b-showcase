@@ -15,6 +15,9 @@ const {
 const {
   migrateProductsToVoucherify,
 } = require('./scripts/migrate-products-to-voucherify')
+const {
+  migrateCustomersToVoucherify,
+} = require('./scripts/migrate-customers-to-voucherify')
 dotenv.config()
 // const checkExpiredEmailValidation = require("./modules/checkExpiredEmailValidation");
 app.use(express.urlencoded({ extended: false }))
@@ -39,6 +42,16 @@ app.get('/hidden-migrate-all-products', async (req, res) => {
   res.json({ success: true, operation: 'started' })
   try {
     await migrateProductsToVoucherify()
+  } catch (e) {
+    console.log(e)
+  }
+  return
+})
+
+app.get('/hidden-migrate-all-customers-to-voucherify', async (req, res) => {
+  res.json({ success: true, operation: 'started' })
+  try {
+    await migrateCustomersToVoucherify()
   } catch (e) {
     console.log(e)
   }

@@ -51,6 +51,15 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     customer,
   } = cart
 
+  if(customer){
+    try{
+      //don't wait
+      getClient().customers.create(customer)
+    }catch(err){
+      console.log('Could not update Customer')
+    }
+  }
+
   const uniqueCoupons = uniqueCouponsByCodes(couponsFromRequest)
   if (couponsFromRequest.length !== uniqueCoupons.length) {
     console.log({

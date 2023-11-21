@@ -43,7 +43,6 @@ const mapEmporixItemsToVoucherifyProducts = (items) => {
 export const buildIntegrationOrderFromEmporixOrder = ({
   emporixOrder,
   customer,
-  customerAdditionalMetadata,
 }) => {
   const currentlyAppliedCoupons = Array.isArray(
     emporixOrder?.mixins?.voucherify?.appliedCoupons
@@ -55,7 +54,6 @@ export const buildIntegrationOrderFromEmporixOrder = ({
     id: emporixOrder.id,
     customer: mapEmporixUserToVoucherifyCustomer(
       customer,
-      customerAdditionalMetadata
     ),
     items: mapEmporixItemsToVoucherifyProducts(emporixOrder?.entries || []),
     coupons: currentlyAppliedCoupons,

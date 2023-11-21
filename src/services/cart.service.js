@@ -57,12 +57,10 @@ const CartService = () => {
   const recheckCart = async (
     cartAccountId,
     customer,
-    customerAdditionalMetadata = {}
   ) => {
     return await updateCart({
       emporixCartId: cartAccountId,
       customer,
-      customerAdditionalMetadata,
     })
   }
 

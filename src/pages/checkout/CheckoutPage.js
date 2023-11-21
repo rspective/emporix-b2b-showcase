@@ -257,8 +257,7 @@ const CheckoutPage = () => {
         return
       }
       const customer = mapEmporixUserToVoucherifyCustomer(
-        user,
-        getCustomerAdditionalMetadata()
+        user
       )
       const emporixCart = await getCart(cartAccount.id)
       const items = mapItemsToVoucherifyOrdersItems(
@@ -282,8 +281,7 @@ const CheckoutPage = () => {
         emporixCart: cartAccount,
         emporixOrderId: order?.orderId,
         customer: mapEmporixUserToVoucherifyCustomer(
-          user,
-          getCustomerAdditionalMetadata()
+          user
         ),
       })
     } catch (e) {

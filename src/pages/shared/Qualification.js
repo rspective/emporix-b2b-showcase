@@ -183,7 +183,7 @@ export const Qualification = ({
         <Box sx={{ fontWeight: 600, fontSize: '22px', lineHeight: '32px' }}>
           {qualification.object === 'voucher'
             ? `Voucher code: ${qualification.code}`
-            : name || qualification.banner}
+            : name || qualification.banner || qualification.name}
         </Box>
         <Box sx={{ fontWeight: '600', fontSize: '16px', lineHeight: '24px' }}>
           <span style={{ fontWeight: 800 }}>

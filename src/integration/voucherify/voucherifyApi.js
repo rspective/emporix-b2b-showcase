@@ -91,19 +91,16 @@ export const getPromotionTiersOrVoucherAddCMSEntryIfPossible = async (
   qualification
 ) => {
   const result = await getPromotionTiersOrVoucher(qualification)
-  let contentfulEntryId
-  if (result?.metadata?.contentfulEntryId) {
-    contentfulEntryId = result.metadata?.contentfulEntryId
-  }
+  let contentfulEntryId = result?.metadata?.contentfulEntities?.pop?.()?.id
   if (!contentfulEntryId && result?.campaign_id) {
     try {
       const campaign = await getClient().campaigns.get(result.campaign_id)
-      contentfulEntryId = campaign?.metadata?.contentfulEntryId
+      contentfulEntryId = campaign?.metadata?.contentfulEntities?.pop?.()?.id
     } catch (e) {
       console.log('error', e)
     }
   }
-  if (contentfulEntryId) {
+  if (!!contentfulEntryId) {
     const cmsFields = await getContentfulEntryFields(contentfulEntryId)
     if (cmsFields instanceof Object && Object.keys(cmsFields).length > 0) {
       result['cmsFields'] = cmsFields

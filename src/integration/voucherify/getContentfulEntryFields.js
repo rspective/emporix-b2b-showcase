@@ -7,6 +7,9 @@ const getContentfulEntryFields = async (entryId) => {
   const response = await fetch(url, {
     method: 'GET',
   })
+  if(response.status!==200){
+    return {}
+  }
   try {
     const responseJSON = await response.json()
     if (responseJSON?.fields) {

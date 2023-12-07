@@ -49,7 +49,7 @@ export const setBannerOnValidatedPromotions = (
       )
       if (appliedPromotion) {
         redeemable['banner'] =
-          appliedPromotion?.cmsFields?.name || appliedPromotion?.banner
+          appliedPromotion?.cmsFields?.name || appliedPromotion?.banner || appliedPromotion?.name
       }
 
       return redeemable
@@ -79,7 +79,7 @@ export const getPromotions = async (cart, uniqCoupons) => {
       return {
         status: 'AVAILABLE',
         value: promo.discount_amount,
-        banner: promo?.cmsFields?.name || promo.banner,
+        banner: promo?.cmsFields?.name || promo.banner || promo.name,
         code: promo.id,
         type: promo.object,
       }

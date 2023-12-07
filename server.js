@@ -3,15 +3,15 @@ const express = require('express')
 const app = express()
 const dotenv = require('dotenv')
 const path = require('path')
-const {
-  migrateCampaignsToContentful,
-} = require('./scripts/migrate-campaigns-to-contentfull')
-const {
-  migratePromotionTiersToContentful,
-} = require('./scripts/migrate-promotion-tiers-to-contentfull')
-const {
-  migrateStandaloneVouchersToContentful,
-} = require('./scripts/migrate-standalone-vouchers-to-contentfull')
+// const {
+//   migrateCampaignsToContentful,
+// } = require('./scripts/migrate-campaigns-to-contentfull')
+// const {
+//   migratePromotionTiersToContentful,
+// } = require('./scripts/migrate-promotion-tiers-to-contentfull')
+// const {
+//   migrateStandaloneVouchersToContentful,
+// } = require('./scripts/migrate-standalone-vouchers-to-contentfull')
 const {
   migrateProductsToVoucherify,
 } = require('./scripts/migrate-products-to-voucherify')
@@ -26,17 +26,17 @@ app.use((req, res, next) => {
   express.json()(req, res, next)
 })
 
-app.get('/hidden-migrate-all-promotions', async (req, res) => {
-  res.json({ success: true, operation: 'started' })
-  try {
-    await migrateCampaignsToContentful()
-    await migratePromotionTiersToContentful()
-    await migrateStandaloneVouchersToContentful()
-  } catch (e) {
-    console.log(e)
-  }
-  return
-})
+// app.get('/hidden-migrate-all-promotions', async (req, res) => {
+//   res.json({ success: true, operation: 'started' })
+//   try {
+//     await migrateCampaignsToContentful()
+//     await migratePromotionTiersToContentful()
+//     await migrateStandaloneVouchersToContentful()
+//   } catch (e) {
+//     console.log(e)
+//   }
+//   return
+// })
 
 app.get('/hidden-migrate-all-products', async (req, res) => {
   res.json({ success: true, operation: 'started' })

@@ -21,7 +21,10 @@ import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify
 import { Qualification } from '../shared/Qualification'
 import { getCart } from '../../integration/emporix/emporixApi'
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
-import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
+import {
+  getCustomer,
+  getQualificationsWithItemsExtended,
+} from '../../integration/voucherify/voucherifyApi'
 import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 import { redeemCart } from '../../integration/voucherify/redeemCart'
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
@@ -60,7 +63,11 @@ const ReviewOrderAction = ({ action }) => {
       </DesktopMDContainer>
 
       <MobileMDContainer>
-        <LargePrimaryButton className='cta-button bg-yellow' title="CONFIRM AND PAY" onClick={action} />
+        <LargePrimaryButton
+          className="cta-button bg-yellow"
+          title="CONFIRM AND PAY"
+          onClick={action}
+        />
       </MobileMDContainer>
     </>
   )
@@ -225,6 +232,7 @@ export const Coupon = () => {
 }
 
 const CheckoutPage = () => {
+  const [voucherifyCustomer, setVoucherifyCustomer] = useState()
   const [status, setStatus] = useState('shipping')
   const [final, setFinal] = useState(false)
   const [order, setOrder] = useState(null)
@@ -256,9 +264,17 @@ const CheckoutPage = () => {
       if (!cartAccount?.id) {
         return
       }
-      const customer = mapEmporixUserToVoucherifyCustomer(
-        user
-      )
+      const customer = mapEmporixUserToVoucherifyCustomer(user)
+      if (customer.source_id) {
+        try {
+          const voucherifyCustomer = await getCustomer(customer.source_id)
+          if (voucherifyCustomer.id) {
+            setVoucherifyCustomer(voucherifyCustomer)
+          }
+        } catch (err) {
+          console.log(err)
+        }
+      }
       const emporixCart = await getCart(cartAccount.id)
       const items = mapItemsToVoucherifyOrdersItems(
         mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
@@ -280,9 +296,7 @@ const CheckoutPage = () => {
       await redeemCart({
         emporixCart: cartAccount,
         emporixOrderId: order?.orderId,
-        customer: mapEmporixUserToVoucherifyCustomer(
-          user
-        ),
+        customer: mapEmporixUserToVoucherifyCustomer(user),
       })
     } catch (e) {
       console.log('could not redeem or create order')
@@ -351,12 +365,16 @@ const CheckoutPage = () => {
         <Box sx={{ mt: -2, display: 'flex', flexDirection: 'column', gap: 1 }}>
           {qualifications.length ? (
             <Box>
+              <Box sx={{ fontWeight: 600, fontSize: 20 }}>
+                Your loyalty points: {voucherifyCustomer?.loyalty?.points || 0}
+              </Box>
               <Box
                 sx={{
+                  flex: 1,
                   fontWeight: 'bold',
                   fontSize: '20px',
                   width: '100%',
-                  textAlign: 'left',
+                  textAlign: 'center',
                 }}
               >
                 Available promotions:

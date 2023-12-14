@@ -12,7 +12,10 @@ import {
 import { Box } from '@mui/system'
 import { useAuth } from '../../context/auth-provider'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
-import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
+import {
+  getCustomer,
+  getQualificationsWithItemsExtended,
+} from '../../integration/voucherify/voucherifyApi'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { getCart } from '../../integration/emporix/emporixApi'
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
@@ -27,6 +30,7 @@ import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAddition
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
 
 const CartPage = () => {
+  const [voucherifyCustomer, setVoucherifyCustomer] = useState()
   const minWidth900px = useMediaQuery('(min-width:900px)')
   const { cartAccount } = useCart()
   const { user } = useAuth()
@@ -106,9 +110,17 @@ const CartPage = () => {
         return
       }
       setCartId(cartAccount?.id)
-      const customer = mapEmporixUserToVoucherifyCustomer(
-        user
-      )
+      const customer = mapEmporixUserToVoucherifyCustomer(user)
+      if (customer.source_id) {
+        try {
+          const voucherifyCustomer = await getCustomer(customer.source_id)
+          if (voucherifyCustomer.id) {
+            setVoucherifyCustomer(voucherifyCustomer)
+          }
+        } catch (err) {
+          console.log(err)
+        }
+      }
       const emporixCart = await getCart(cartAccount.id)
       const items = mapItemsToVoucherifyOrdersItems(
         mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
@@ -280,6 +292,10 @@ const CartPage = () => {
             ) : undefined}
             {allOtherQualifications.length ? (
               <Box>
+                <Box sx={{ fontWeight: 600, fontSize: 20 }}>
+                  Your loyalty points:{' '}
+                  {voucherifyCustomer?.loyalty?.points || 0}
+                </Box>
                 <Box
                   sx={{
                     fontWeight: 'bold',

@@ -125,7 +125,7 @@ export const updateCartMetadataMixins = async (
     ...(emporixCart?.metadata?.mixins || {}),
   }
   mixinsSchema.voucherify =
-    'https://res.cloudinary.com/saas-ag/raw/upload/v1686167929/voucherify/voucherify.json'
+    'https://raw.githubusercontent.com/rspective/emporix-b2b-showcase/pz/requested-changes/src/integration/emporix/voucherify.json'
   //this corrects past misconfiguration
   mixinsSchema.sessionKey = undefined
   mixinsSchema.appliedCoupons = undefined
@@ -135,7 +135,8 @@ export const updateCartMetadataMixins = async (
   const mixins = {
     ...(emporixCart?.mixins || {}),
     voucherify: {
-      sessionKey: newSessionKey || emporixCart.mixins?.voucherify?.sessionKey,
+      sessionKey:
+        newSessionKey || emporixCart.mixins?.voucherify?.sessionKey || null,
       appliedCoupons: applicableCoupons
         .filter((coupon) => {
           if (!deletedCodes) {
@@ -175,9 +176,9 @@ export const updateCartMetadataMixins = async (
     }
   )
   if (cartUpdate.status !== 204) {
-    throw {
+    console.log({
       error: `Could not update cart with id: ${emporixCart.id}`,
-    }
+    })
   }
 }
 
@@ -195,9 +196,8 @@ export const getCart = async (cartId) => {
     }
   )
   if (cartRaw.status !== 200) {
-    throw {
-      error: `Could not find cart with id: ${cartId}`,
-    }
+    console.log('error', cartRaw)
+    return {}
   }
   return await cartRaw.json()
 }

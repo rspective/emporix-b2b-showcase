@@ -7,11 +7,8 @@ import { Box } from '@mui/system'
 import {
   getCustomer,
   getQualificationsWithItemsExtended,
-  listMemberRewards,
 } from '../../integration/voucherify/voucherifyApi'
 import { Qualification } from '../shared/Qualification'
-import { CUSTOMER_ADDITIONAL_METADATA } from '../../constants/localstorage'
-import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 import './about.css'
 import Collapse from '@mui/material/Collapse'
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'

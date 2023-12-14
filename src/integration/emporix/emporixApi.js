@@ -135,7 +135,8 @@ export const updateCartMetadataMixins = async (
   const mixins = {
     ...(emporixCart?.mixins || {}),
     voucherify: {
-      sessionKey: newSessionKey || emporixCart.mixins?.voucherify?.sessionKey,
+      sessionKey:
+        newSessionKey || emporixCart.mixins?.voucherify?.sessionKey || null,
       appliedCoupons: applicableCoupons
         .filter((coupon) => {
           if (!deletedCodes) {
@@ -175,9 +176,9 @@ export const updateCartMetadataMixins = async (
     }
   )
   if (cartUpdate.status !== 204) {
-    throw {
+    console.log({
       error: `Could not update cart with id: ${emporixCart.id}`,
-    }
+    })
   }
 }
 
@@ -195,9 +196,7 @@ export const getCart = async (cartId) => {
     }
   )
   if (cartRaw.status !== 200) {
-    throw {
-      error: `Could not find cart with id: ${cartId}`,
-    }
+    console.log('error', cartRaw)
   }
   return await cartRaw.json()
 }

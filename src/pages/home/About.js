@@ -7,6 +7,8 @@ import { Box } from '@mui/system'
 import {
   getCustomer,
   getQualificationsWithItemsExtended,
+  listLoyaltyTierRewards,
+  listMemberLoyaltyTiers,
 } from '../../integration/voucherify/voucherifyApi'
 import { Qualification } from '../shared/Qualification'
 import './about.css'
@@ -41,6 +43,36 @@ const About = () => {
   const [qualifications, setQualifications] = useState([])
   const [voucherifyCustomer, setVoucherifyCustomer] = useState()
 
+  const getAndSetQualifications = async (customer) => {
+    const emporixCart = cartAccount?.id ? await getCart(cartAccount.id) : {}
+    const items = mapItemsToVoucherifyOrdersItems(
+      mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
+    )
+    const qualifications = uniqBy(
+      items
+        ? await getQualificationsWithItemsExtended(
+            'AUDIENCE_ONLY',
+            items,
+            customer || voucherifyCustomer
+          )
+        : [].concat(
+            ...(await Promise.all([
+              await getQualificationsWithItemsExtended(
+                'AUDIENCE_ONLY',
+                items,
+                customer || voucherifyCustomer
+              ),
+              await getQualificationsWithItemsExtended(
+                'PRODUCTS_DISCOUNT',
+                items,
+                customer || voucherifyCustomer
+              ),
+            ]))
+          )
+    )
+    setQualifications(qualifications)
+  }
+
   useEffect(() => {
     ;(async () => {
       const customer = mapEmporixUserToVoucherifyCustomer(user)
@@ -54,31 +86,7 @@ const About = () => {
           console.log(err)
         }
       }
-      const emporixCart = cartAccount?.id ? await getCart(cartAccount.id) : {}
-      const items = mapItemsToVoucherifyOrdersItems(
-        mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
-      )
-      const qualifications = items
-        ? await getQualificationsWithItemsExtended(
-            'AUDIENCE_ONLY',
-            items,
-            customer
-          )
-        : [].concat(
-            ...(await Promise.all([
-              await getQualificationsWithItemsExtended(
-                'AUDIENCE_ONLY',
-                items,
-                customer
-              ),
-              await getQualificationsWithItemsExtended(
-                'PRODUCTS_DISCOUNT',
-                items,
-                customer
-              ),
-            ]))
-          )
-      setQualifications(uniqBy(qualifications, 'id'))
+      getAndSetQualifications(customer)
     })()
   }, [user])
 
@@ -126,6 +134,8 @@ const About = () => {
               <Qualification
                 key={qualification.id}
                 qualification={qualification}
+                voucherifyCustomer={voucherifyCustomer}
+                setQualifications={getAndSetQualifications}
               />
             ))}
             {qualifications.length === 0 && (

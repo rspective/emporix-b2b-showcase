@@ -110,30 +110,37 @@ const CartPage = () => {
         return
       }
       setCartId(cartAccount?.id)
-      const customer = mapEmporixUserToVoucherifyCustomer(user)
-      if (customer.source_id) {
-        try {
-          const voucherifyCustomer = await getCustomer(customer.source_id)
-          if (voucherifyCustomer.id) {
-            setVoucherifyCustomer(voucherifyCustomer)
-          }
-        } catch (err) {
-          console.log(err)
-        }
-      }
-      const emporixCart = await getCart(cartAccount.id)
-      const items = mapItemsToVoucherifyOrdersItems(
-        mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
-      )
-      const allQualificationsSoFar = [].concat(
-        ...(await Promise.all([
-          await setProductsQualificationsFunction(items, customer),
-          await loadCustomerWalletQualifications(items, customer),
-        ]))
-      )
-      await loadALLQualifications(items, customer, allQualificationsSoFar)
+      setQualifications()
     })()
   }, [cartAccount?.items, user])
+
+  const setQualifications = async () => {
+    if (!cartAccount?.id) {
+      return
+    }
+    const customer = mapEmporixUserToVoucherifyCustomer(user)
+    if (customer.source_id) {
+      try {
+        const voucherifyCustomer = await getCustomer(customer.source_id)
+        if (voucherifyCustomer.id) {
+          setVoucherifyCustomer(voucherifyCustomer)
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    }
+    const emporixCart = await getCart(cartAccount.id)
+    const items = mapItemsToVoucherifyOrdersItems(
+      mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
+    )
+    const allQualificationsSoFar = [].concat(
+      ...(await Promise.all([
+        await setProductsQualificationsFunction(items, customer),
+        await loadCustomerWalletQualifications(items, customer),
+      ]))
+    )
+    await loadALLQualifications(items, customer, allQualificationsSoFar)
+  }
 
   useEffect(() => {
     const items = cartAccount?.items || []
@@ -320,6 +327,8 @@ const CartPage = () => {
                       key={qualification.id}
                       qualification={qualification}
                       allowVoucherApply={true}
+                      voucherifyCustomer={voucherifyCustomer}
+                      setQualifications={setQualifications}
                     />
                   ))}
                 </Box>

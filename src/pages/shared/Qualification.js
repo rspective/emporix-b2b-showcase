@@ -4,14 +4,23 @@ import { useCart } from '../../context/cart-provider'
 import Box from '@mui/material/Box'
 import { Button, Link } from '@mui/material'
 import { CircularProgress } from '@material-ui/core'
-import { getProduct } from '../../integration/emporix/emporixApi'
-import { asyncMap } from '../../integration/voucherify/voucherifyApi'
+import { getCart, getProduct } from '../../integration/emporix/emporixApi'
+import {
+  asyncMap,
+  getCustomer,
+  getQualificationsWithItemsExtended,
+  redeemReward,
+} from '../../integration/voucherify/voucherifyApi'
 import CartService from '../../services/cart.service'
 import priceService from '../../services/product/price.service'
 import category from '../home/Category'
 import pencil from '../../assets/pencil.svg'
 import pencilGreen from '../../assets/pencil_green.svg'
 import checkCircle from '../../assets/check_circle.svg'
+import { buildIntegrationCartFromEmporixCart } from '../../integration/buildIntegrationCartFromEmporixCart'
+import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
+import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
+import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
 
 const getUserId = (user) => {
   return user?.id || 'anonymous'
@@ -59,6 +68,8 @@ export const Qualification = ({
   addProducts,
   cartId,
   allowVoucherApply,
+  voucherifyCustomer,
+  setQualifications,
 }) => {
   const loyaltyBalance = qualification.loyalty_card?.balance
   const isLoyalty = qualification.type === 'LOYALTY_CARD'
@@ -70,6 +81,7 @@ export const Qualification = ({
   useEffect(() => {
     setUsersSavedQualificationsState(getUsersSavedQualifications(user))
   }, [user])
+
   function addToUsersSavedQualifications(qualification) {
     const usersSavedQualifications = getUsersSavedQualifications(user)
     usersSavedQualifications.push(qualification)
@@ -88,7 +100,13 @@ export const Qualification = ({
 
   const [isBeingApplied, setIsBeingApplied] = useState(false)
   const [areProductsBeingAdded, setAreProductsBeingAdded] = useState(false)
-  const { applyPromotion, applyDiscount, cartAccount, recheckCart } = useCart()
+  const {
+    applyPromotion,
+    applyDiscount,
+    applyReward,
+    cartAccount,
+    recheckCart,
+  } = useCart()
   const cartMixins = cartAccount?.mixins?.voucherify || {}
   const { availablePromotions, appliedCoupons } = cartMixins
   const availablePromotionsCodes = (availablePromotions || []).map(
@@ -146,7 +164,9 @@ export const Qualification = ({
     setIsBeingApplied(true)
     try {
       const result =
-        qualification.object === 'voucher'
+        code instanceof Object && 'reward' in code
+          ? await applyReward(code, user)
+          : qualification.object === 'voucher'
           ? await applyDiscount(code, user)
           : await applyPromotion(code, user)
       if (result.inapplicableCoupons?.length) {
@@ -181,7 +201,9 @@ export const Qualification = ({
       <img src={pencilGreen} className="w-8 h-8 mt-6 ml-4 mr-2" alt="pencil" />
       <Box sx={{ m: 2, flex: '1' }}>
         <Box sx={{ fontWeight: 600, fontSize: '22px', lineHeight: '32px' }}>
-          {qualification.object === 'voucher'
+          {qualification.type === 'LOYALTY_CARD'
+            ? 'Loyalty card'
+            : qualification.object === 'voucher'
             ? `Voucher code: ${qualification.code}`
             : name || qualification.banner || qualification.name}
         </Box>
@@ -192,16 +214,6 @@ export const Qualification = ({
               : description}
           </span>
         </Box>
-        {isLoyalty && (
-          <Box sx={{ fontSize: '14px' }}>
-            {loyaltyBalance ? (
-              <>
-                Loyalty balance: {loyaltyBalance}
-                <br />
-              </>
-            ) : undefined}
-          </Box>
-        )}
         {termsAndConditions && (
           <Box
             sx={{
@@ -276,75 +288,26 @@ export const Qualification = ({
               ) : undefined}
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', gap: '10px' }}>
-              <Box sx={{ display: 'flex' }}>
-                {qualification.object === 'voucher' && !allowVoucherApply ? (
-                  <Box>
-                    <Button
-                      className="cta-button"
-                      title="Save voucher"
-                      variant={'contained'}
-                      sx={{
-                        mt: 1,
-                        mb: '14px',
-                        borderRadius: 0,
-                        background: !usersSavedQualificationsState
-                          .map((qualification) => qualification?.code)
-                          .includes(qualification.code)
-                          ? '#FAC420'
-                          : '#219653',
-                        '&:hover': {
-                          background: !usersSavedQualificationsState
-                            .map((qualification) => qualification?.code)
-                            .includes(qualification.code)
-                            ? '#FAC420'
-                            : '#219653',
-                        },
-                      }}
-                      onClick={() => {
-                        if (
-                          !usersSavedQualificationsState
-                            .map((qualification) => qualification?.code)
-                            .includes(qualification.code)
-                        ) {
-                          addToUsersSavedQualifications(qualification)
-                        } else {
-                          removeFromUsersSavedQualifications(qualification.code)
-                        }
-                      }}
-                    >
-                      {usersSavedQualificationsState
-                        .map((qualification) => qualification?.code)
-                        .includes(qualification.code) ? (
-                        <>
-                          <img
-                            src={checkCircle}
-                            className="w-4 h-4 mr-4"
-                            alt="checkCircle"
-                          />
-                          Saved for later
-                        </>
-                      ) : (
-                        <>
-                          <img
-                            src={pencil}
-                            className="w-4 h-4 mr-4"
-                            alt="pencil"
-                          />
-                          Save for later
-                        </>
-                      )}
-                    </Button>
+            <Box sx={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+              {qualification.type === 'LOYALTY_CARD' ? (
+                <>
+                  <Box sx={{ fontWeight: 500, mt: 1 }}>
+                    {qualification.rewards?.length
+                      ? 'Rewards:'
+                      : 'No rewards found'}
                   </Box>
-                ) : (
-                  <>
-                    {canApply && (
+                  {(qualification.rewards || []).map((reward) => (
+                    <Box key={reward.reward.id}>
+                      <Box>{reward.reward.name}</Box>
                       <Box>
                         <Button
                           className="cta-button"
-                          title="Apply Coupon"
+                          title="Apply Reward"
                           disabled={
-                            isBeingApplied || alreadyAppliedCodes.length >= 5
+                            isBeingApplied ||
+                            alreadyAppliedCodes.length >= 5 ||
+                            loyaltyBalance <
+                              (reward?.assignment?.parameters?.points || 0)
                           }
                           variant={'contained'}
                           sx={{
@@ -356,35 +319,161 @@ export const Qualification = ({
                               backgroundColor: '#FAC420',
                             },
                           }}
-                          onClick={() =>
-                            alreadyAppliedCodes.length < 5 &&
-                            apply(
-                              qualification.object === 'voucher'
-                                ? qualification.code
-                                : qualification.id,
-                              user
-                            )
-                          }
+                          onClick={async () => {
+                            setIsBeingApplied(true)
+                            try {
+                              const result = await redeemReward(
+                                qualification.campaign_id,
+                                qualification.id,
+                                {
+                                  reward: { id: reward.reward.id },
+                                  order: buildIntegrationCartFromEmporixCart({
+                                    emporixCart: cartAccount
+                                      ? await getCart(cartAccount.id)
+                                      : {},
+                                    voucherifyCustomer,
+                                  }),
+                                }
+                              )
+                              console.log(result)
+                              if (typeof setQualifications === 'function') {
+                                await new Promise((r) => setTimeout(r, 2000))
+                                await setQualifications()
+                              }
+                              console.log(123)
+                              setIsBeingApplied(true)
+                            } catch (e) {}
+                            setIsBeingApplied(true)
+                          }}
                         >
                           <img
                             src={pencil}
                             className="w-4 h-4 mr-4"
                             alt="pencil"
                           />
-                          {alreadyAppliedCodes.length >= 5
-                            ? 'You have reached coupon limit'
-                            : 'Apply'}
+                          {loyaltyBalance <
+                          (reward?.assignment?.parameters?.points || 0)
+                            ? 'not enough points'
+                            : alreadyAppliedCodes.length >= 5
+                            ? 'You have reached promotions limit'
+                            : 'Apply reward'}
                         </Button>
                       </Box>
-                    )}
-                  </>
-                )}
-                {isBeingApplied && (
-                  <Box sx={{ mb: '-60px', mt: '9px', ml: 1 }}>
-                    <CircularProgress size={36.5} />
-                  </Box>
-                )}
-              </Box>
+                    </Box>
+                  ))}
+                </>
+              ) : (
+                <Box sx={{ display: 'flex' }}>
+                  {qualification.object === 'voucher' && !allowVoucherApply ? (
+                    <Box>
+                      <Button
+                        className="cta-button"
+                        title="Save voucher"
+                        variant={'contained'}
+                        sx={{
+                          mt: 1,
+                          mb: '14px',
+                          borderRadius: 0,
+                          background: !usersSavedQualificationsState
+                            .map((qualification) => qualification?.code)
+                            .includes(qualification.code)
+                            ? '#FAC420'
+                            : '#219653',
+                          '&:hover': {
+                            background: !usersSavedQualificationsState
+                              .map((qualification) => qualification?.code)
+                              .includes(qualification.code)
+                              ? '#FAC420'
+                              : '#219653',
+                          },
+                        }}
+                        onClick={() => {
+                          if (
+                            !usersSavedQualificationsState
+                              .map((qualification) => qualification?.code)
+                              .includes(qualification.code)
+                          ) {
+                            addToUsersSavedQualifications(qualification)
+                          } else {
+                            removeFromUsersSavedQualifications(
+                              qualification.code
+                            )
+                          }
+                        }}
+                      >
+                        {usersSavedQualificationsState
+                          .map((qualification) => qualification?.code)
+                          .includes(qualification.code) ? (
+                          <>
+                            <img
+                              src={checkCircle}
+                              className="w-4 h-4 mr-4"
+                              alt="checkCircle"
+                            />
+                            Saved for later
+                          </>
+                        ) : (
+                          <>
+                            <img
+                              src={pencil}
+                              className="w-4 h-4 mr-4"
+                              alt="pencil"
+                            />
+                            Save for later
+                          </>
+                        )}
+                      </Button>
+                    </Box>
+                  ) : (
+                    <>
+                      {canApply && (
+                        <Box>
+                          <Button
+                            className="cta-button"
+                            title="Apply Coupon"
+                            disabled={
+                              isBeingApplied || alreadyAppliedCodes.length >= 5
+                            }
+                            variant={'contained'}
+                            sx={{
+                              mt: 1,
+                              mb: '14px',
+                              borderRadius: 0,
+                              backgroundColor: '#FAC420',
+                              '&:hover': {
+                                backgroundColor: '#FAC420',
+                              },
+                            }}
+                            onClick={() =>
+                              alreadyAppliedCodes.length < 5 &&
+                              apply(
+                                qualification.object === 'voucher'
+                                  ? qualification.code
+                                  : qualification.id,
+                                user
+                              )
+                            }
+                          >
+                            <img
+                              src={pencil}
+                              className="w-4 h-4 mr-4"
+                              alt="pencil"
+                            />
+                            {alreadyAppliedCodes.length >= 5
+                              ? 'You have reached coupon limit'
+                              : 'Apply'}
+                          </Button>
+                        </Box>
+                      )}
+                    </>
+                  )}
+                  {isBeingApplied && (
+                    <Box sx={{ mb: '-60px', mt: '9px', ml: 1 }}>
+                      <CircularProgress size={36.5} />
+                    </Box>
+                  )}
+                </Box>
+              )}
               {addProducts?.length > 0 ? (
                 <Box sx={{ display: 'flex' }}>
                   <Button

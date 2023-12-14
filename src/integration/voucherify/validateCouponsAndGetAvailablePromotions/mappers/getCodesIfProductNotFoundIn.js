@@ -1,24 +1,22 @@
-
-
 export function getCodesIfProductNotFoundIn(
   stackableRedeemablesResultDiscountUnitWithPriceAndCodes,
-  notFoundProductSourceIds,
+  notFoundProductSourceIds
 ) {
   const codesWithDuplicates =
     stackableRedeemablesResultDiscountUnitWithPriceAndCodes
       .map((stackableRedeemableResultDiscountUnitWithPriceAndCodes) => {
         const code =
-          stackableRedeemableResultDiscountUnitWithPriceAndCodes?.code;
+          stackableRedeemableResultDiscountUnitWithPriceAndCodes?.code
         const sourceId =
           stackableRedeemableResultDiscountUnitWithPriceAndCodes?.product
-            ?.source_id;
+            ?.source_id
         if (notFoundProductSourceIds.includes(sourceId)) {
-          return code;
+          return code
         }
-        return undefined;
+        return undefined
       })
-      .filter((e) => !!e);
+      .filter((e) => !!e)
 
   // @ts-ignore
-    return [...new Set(codesWithDuplicates)];
+  return [...new Set(codesWithDuplicates)]
 }

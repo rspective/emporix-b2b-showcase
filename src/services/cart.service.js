@@ -8,10 +8,11 @@ import {
   getCartMergeUrl,
 } from './service.config'
 import ApiRequest from './index'
-import { ACCESS_TOKEN } from '../constants/localstorage'
+import { ACCESS_TOKEN, TENANT } from '../constants/localstorage'
 import { api } from './axios'
 import { getLanguageFromLocalStorage } from '../context/language-provider'
 import { updateCart } from '../integration/updateCart'
+import { fetchContext } from './context'
 
 const CartService = () => {
   const mergeCarts = async (targetCartId, sourceCartId) => {
@@ -54,13 +55,11 @@ const CartService = () => {
     return cart
   }
 
-  const recheckCart = async (
-    cartAccountId,
-    customer,
-  ) => {
+  const recheckCart = async (cartAccountId, customer) => {
     return await updateCart({
       emporixCartId: cartAccountId,
       customer,
+      context: (await fetchContext(localStorage.getItem(TENANT)))?.data || {},
     })
   }
 
@@ -69,6 +68,7 @@ const CartService = () => {
       emporixCartId: cartAccountId,
       newPromotionCodes: [code],
       customer,
+      context: (await fetchContext(localStorage.getItem(TENANT)))?.data || {},
     })
   }
 
@@ -77,6 +77,7 @@ const CartService = () => {
       emporixCartId: cartAccountId,
       newCodes: [code],
       customer,
+      context: (await fetchContext(localStorage.getItem(TENANT)))?.data || {},
     })
   }
   const removeDiscount = async (cartAccountId, code, customer) => {
@@ -84,6 +85,7 @@ const CartService = () => {
       emporixCartId: cartAccountId,
       codesToRemove: [code],
       customer,
+      context: (await fetchContext(localStorage.getItem(TENANT)))?.data || {},
     })
   }
 

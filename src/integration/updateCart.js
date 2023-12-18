@@ -16,6 +16,7 @@ export const updateCart = async ({
   codesToRemove,
   newPromotionCodes,
   customer,
+  context,
 }) => {
   if (!emporixCartId) {
     return {
@@ -32,9 +33,9 @@ export const updateCart = async ({
         codesToRemove,
         newPromotionCodes,
         customer,
+        context,
       })
     )
-    console.log(validationResult)
     const { applicableCoupons } = validationResult
     const { items } = buildIntegrationCartFromEmporixCart({ emporixCart })
     const discountsDetails = getDiscountsValues(applicableCoupons, items)

@@ -29,8 +29,10 @@ export const getCartById = (cartId) =>
 export const getCartMergeUrl = (cartId) =>
   `${API_URL}/cart/${getTenant()}/carts/${cartId}/merge`
 export const getRewardPoints = () => `${API_URL}/reward-points/public/customer`
-export const getRedeemOptions = () => `${API_URL}/reward-points/public/customer/redeemOptions`
-export const redeemCouponForPoints = () => `${API_URL}/reward-points/public/customer/redeem`
+export const getRedeemOptions = () =>
+  `${API_URL}/reward-points/public/customer/redeemOptions`
+export const redeemCouponForPoints = () =>
+  `${API_URL}/reward-points/public/customer/redeem`
 export const cartItemApi = () => `${API_URL}/cart/${getTenant()}/carts`
 export const cartApi = () => `${API_URL}/cart/${getTenant()}/carts`
 export const cartProductsApi = () => `${API_URL}/cart/${getTenant()}/carts`
@@ -38,13 +40,13 @@ export const cartRemoveApi = () => `${API_URL}/cart/${getTenant()}/carts`
 export const cartItemUrl = (cartId, itemId) => {
   return `${API_URL}/cart/${getTenant()}/carts/${cartId}/items/${itemId}`
 }
-export const priceApi = () =>
+export const priceApi = () => `${API_URL}/price/${getTenant()}/match-prices`
+export const priceApiByContext = () =>
   `${API_URL}/price/${getTenant()}/match-prices-by-context`
 export const currencyApi = () => `${API_URL}/currency/${getTenant()}/currencies`
 export const triggerCheckoutApi = () =>
   `${API_URL}/checkout/${getTenant()}/checkouts/order`
-export const countriesApi = () =>
-  `${API_URL}/country/${getTenant()}/countries`
+export const countriesApi = () => `${API_URL}/country/${getTenant()}/countries`
 // URLS
 export const addLocationUrl = () => `/${getTenant()}/my-account/locations/add`
 export const myAccountLocationUrl = () => `/${getTenant()}/my-account/locations`
@@ -63,8 +65,7 @@ export const myAccountMyOrdersViewUrl = () =>
   `/${getTenant()}/my-account/my-orders/view/`
 export const myAccountMyOrdersInvoiceUrl = () =>
   `/${getTenant()}/my-account/my-orders/invoice/`
-  export const createReturnUrl = () =>
-  `/${getTenant()}/create-return/`
+export const createReturnUrl = () => `/${getTenant()}/create-return/`
 export const checkoutUrl = () => `/${getTenant()}/checkout`
 export const quoteUrl = () => `/${getTenant()}/quote`
 export const cartUrl = () => `/${getTenant()}/cart`
@@ -75,4 +76,5 @@ export const productUrl = () => `/${getTenant()}/product`
 export const addTenantToUrl = (url) => `/${getTenant()}/${url}`
 
 export const fetchReturnsUrl = () => `/return/${getTenant()}/returns`
-export const fetchSingleReturnUrl = (id) => `/return/${getTenant()}/returns/${id}`
+export const fetchSingleReturnUrl = (id) =>
+  `/return/${getTenant()}/returns/${id}`

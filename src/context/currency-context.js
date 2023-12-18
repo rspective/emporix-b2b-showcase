@@ -11,17 +11,8 @@ export const useCurrency = () => useContext(CurrencyContext)
 const CurrencyProvider = ({ children }) => {
   const { updateContext, context } = useAppContext()
   const { currentSite } = useSites()
-  const [currencyList, setCurrencyList] = useState([
-    {
-      code: 'EUR',
-      symbol: getSymbolFromCurrency('EUR'),
-    },
-  ])
-
-  const [activeCurrency, setActiveCurrency] = useState({
-    code: 'EUR',
-    symbol: getSymbolFromCurrency('EUR'),
-  })
+  const [currencyList, setCurrencyList] = useState([])
+  const [activeCurrency, setActiveCurrency] = useState({})
 
   const syncCurrencies = async () => {
     const currencies = await currencyService.getAllCurrencies()

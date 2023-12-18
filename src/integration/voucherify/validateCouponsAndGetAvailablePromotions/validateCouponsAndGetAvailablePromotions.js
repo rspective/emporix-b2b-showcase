@@ -30,6 +30,17 @@ import {
   validateStackableVouchers,
 } from '../voucherifyApi'
 import { getProductsToAdd } from './mappers/getProductsToAdd'
+import ApiRequest from '../../../services'
+import {
+  cartProductsApi,
+  getCartById,
+  priceApi,
+} from '../../../services/service.config'
+import { getEmporixAPIAccessToken } from '../../emporix/getEmporixAPIAccessToken'
+import { compact, pick } from 'lodash'
+import { TENANT } from '../../../constants/localstorage'
+import { mapEmporixItemsToVoucherifyProducts } from '../mappers/mapEmporixItemsToVoucherifyProducts'
+import { getCart } from '../../emporix/emporixApi'
 
 const defaultResponse = {
   availablePromotions: [],
@@ -50,6 +61,7 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     coupons: couponsFromRequest,
     items,
     customer,
+    context,
   } = cart
 
   if (customer) {
@@ -151,7 +163,80 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     notFoundProductSourceIds
   )
 
-  const pricesIncorrect = []
+  const productsToAdd = await getProductsToAdd(
+    validatedCoupons,
+    couponsFromRequest,
+    items,
+    context
+  )
+
+  //addProductsToEmporix
+  if (productsToAdd.length > 0) {
+    try {
+      const emporixPrices = (
+        await ApiRequest(
+          priceApi(),
+          'post',
+          {
+            targetCurrency: context.currency,
+            siteCode: context.siteCode,
+            targetLocation: { countryCode: context.targetLocation },
+            items: productsToAdd.map((productToAdd) => ({
+              itemId: {
+                itemType: 'PRODUCT',
+                includesTax: false,
+                id: productToAdd.source_id,
+              },
+              quantity: {
+                quantity: 1,
+              },
+            })),
+          },
+          {
+            'X-Version': 'v2',
+            Authorization: `Bearer ${await getEmporixAPIAccessToken()}`,
+            'Content-Type': 'application/json',
+          }
+        )
+      ).data
+      const dataForAddingProductsToEmporixCart = compact(
+        productsToAdd.map((productsToAdd) => {
+          const { source_id } = productsToAdd
+          const priceObject = emporixPrices.find(
+            (priceObject) => priceObject.itemId?.id === source_id
+          )
+          if (!priceObject) {
+            return
+          }
+          return {
+            quantity: productsToAdd.newQuantity - productsToAdd.currentQuantity,
+            price: {
+              priceId: priceObject.priceId,
+              originalAmount: priceObject.originalValue,
+              effectiveAmount: priceObject.effectiveValue,
+              currency: priceObject.currency,
+            },
+            itemYrn: `urn:yaas:saasag:caasproduct:product:${localStorage.getItem(
+              TENANT
+            )};${source_id}`,
+          }
+        })
+      )
+      await ApiRequest(
+        getCartById(id) + '/itemsBatch',
+        'post',
+        dataForAddingProductsToEmporixCart,
+        {
+          'X-Version': 'v2',
+          Authorization: `Bearer ${await getEmporixAPIAccessToken()}`,
+          'Content-Type': 'application/json',
+        }
+      )
+    } catch (e) {
+      console.log(e)
+      console.log('could not add products')
+    }
+  }
 
   //don't wait
   releaseValidationSession(
@@ -159,19 +244,7 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     validatedCoupons?.session?.key ?? sessionKey
   )
 
-  if (
-    filterOutCouponsIfCodeIn(
-      couponsAppliedAndNewLimitedByConfig,
-      codesWithMissingProductsToAdd
-    ).length > 0 &&
-    pricesIncorrect.length
-  ) {
-    const itemsWithPricesCorrected = getItemsWithCorrectedPrices(
-      validatedCoupons.order.items,
-      items,
-      pricesIncorrect
-    )
-
+  if (productsToAdd.length) {
     validatedCoupons = await validateStackableVouchers(
       buildValidationsValidateStackableParamsForVoucherify(
         filterOutCouponsIfCodeIn(
@@ -179,13 +252,10 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
           codesWithMissingProductsToAdd
         ),
         cart,
-        itemsWithPricesCorrected
+        mapEmporixItemsToVoucherifyProducts((await getCart(id))?.items || [])
       )
     )
   }
-
-  console.log(couponsFromRequest)
-  const productsToAdd = getProductsToAdd(validatedCoupons, couponsFromRequest)
 
   const applicableCoupons = setBannerOnValidatedPromotions(
     filterOutRedeemablesIfCodeIn(

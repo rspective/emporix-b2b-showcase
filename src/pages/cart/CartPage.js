@@ -319,10 +319,6 @@ const CartPage = () => {
             ) : undefined}
             {allOtherQualifications.length ? (
               <Box>
-                <Box sx={{ fontWeight: 600, fontSize: 20 }}>
-                  Your loyalty points:{' '}
-                  {voucherifyCustomer?.loyalty?.points || 0}
-                </Box>
                 <Box
                   sx={{
                     fontWeight: 'bold',

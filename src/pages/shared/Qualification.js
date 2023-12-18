@@ -73,7 +73,7 @@ export const Qualification = ({
   addToQualifications,
 }) => {
   const [loyaltyBalance, setLoyaltyBalance] = useState(
-    qualification.loyalty_card?.balance
+    qualification.loyalty_card?.balance || 0
   )
   const isLoyalty = qualification.type === 'LOYALTY_CARD'
 

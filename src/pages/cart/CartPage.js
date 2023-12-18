@@ -42,12 +42,15 @@ const CartPage = () => {
   const [cartId, setCartId] = useState(undefined)
 
   const loadCustomerWalletQualifications = async (items, customer) => {
-    const customerWalletQualifications =
+    const customerWalletQualifications = (
       await getQualificationsWithItemsExtended(
         'CUSTOMER_WALLET',
         items,
         customer
       )
+    ).sort((q1, q2) =>
+      q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+    )
     setCustomerWalletQualifications(customerWalletQualifications)
     return customerWalletQualifications
   }
@@ -60,10 +63,10 @@ const CartPage = () => {
     const qualificationsIdsSoFar = allQualificationsSoFar.map(
       (qualification) => qualification.id
     )
-    const qualificationsAllScenario = await getQualificationsWithItemsExtended(
-      'ALL',
-      items,
-      customer
+    const qualificationsAllScenario = (
+      await getQualificationsWithItemsExtended('ALL', items, customer)
+    ).sort((q1, q2) =>
+      q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
     )
     setAllOtherQualifications(
       qualificationsAllScenario.filter(
@@ -92,14 +95,22 @@ const CartPage = () => {
     )
     const bundleQualifications = getOnlyBundleQualifications(allQualifications)
     //don't wait
-    setBundleQualificationsEnriched(bundleQualifications)
+    setBundleQualificationsEnriched(
+      bundleQualifications.sort((q1, q2) =>
+        q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+      )
+    )
     const allQualificationsWithoutBundles =
       filterOutBundleQualifications(allQualifications)
     const allQualificationsPerProducts = getQualificationsPerProducts(
       allQualificationsWithoutBundles,
       productsIds
     )
-    setProductQualifications(allQualificationsPerProducts)
+    setProductQualifications(
+      allQualificationsPerProducts.sort((q1, q2) =>
+        q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+      )
+    )
     return allQualifications
   }
   const [cartItemIds, setCartItemIds] = useState([])
@@ -283,7 +294,7 @@ const CartPage = () => {
                     flexDirection: 'column',
                   }}
                 >
-                  {bundleQualifications?.map((qualification) => (
+                  {bundleQualifications?.map((qualification, index) => (
                     <Qualification
                       key={qualification.id}
                       qualification={qualification}
@@ -292,6 +303,15 @@ const CartPage = () => {
                       addProducts={(qualification?.relatedTo || []).filter(
                         (id) => !cartItemIds.includes(id)
                       )}
+                      voucherifyCustomer={voucherifyCustomer}
+                      addToQualifications={(voucher) => {
+                        setBundleQualifications([
+                          ...bundleQualifications.slice(0, index + 1),
+                          voucher,
+                          ...bundleQualifications.slice(index + 1),
+                        ])
+                      }}
+                      setVoucherifyCustomer={setVoucherifyCustomer}
                     />
                   ))}
                 </Box>
@@ -322,13 +342,21 @@ const CartPage = () => {
                     flexDirection: 'column',
                   }}
                 >
-                  {allOtherQualifications?.map((qualification) => (
+                  {allOtherQualifications?.map((qualification, index) => (
                     <Qualification
                       key={qualification.id}
                       qualification={qualification}
                       allowVoucherApply={true}
                       voucherifyCustomer={voucherifyCustomer}
                       setQualifications={setQualifications}
+                      addToQualifications={(voucher) => {
+                        setAllOtherQualifications([
+                          ...allOtherQualifications.slice(0, index + 1),
+                          voucher,
+                          ...allOtherQualifications.slice(index + 1),
+                        ])
+                      }}
+                      setVoucherifyCustomer={setVoucherifyCustomer}
                     />
                   ))}
                 </Box>
@@ -372,6 +400,16 @@ const CartPage = () => {
                         key={qualification.id}
                         qualification={qualification}
                         allowVoucherApply={true}
+                        voucherifyCustomer={voucherifyCustomer}
+                        setQualifications={setQualifications}
+                        addToQualifications={(voucher, index) => {
+                          setCustomerWalletQualifications([
+                            ...customerWalletQualifications.slice(0, index + 1),
+                            voucher,
+                            ...customerWalletQualifications.slice(index + 1),
+                          ])
+                        }}
+                        setVoucherifyCustomer={setVoucherifyCustomer}
                       />
                     ))}
                   </>

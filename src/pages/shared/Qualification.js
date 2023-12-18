@@ -69,9 +69,13 @@ export const Qualification = ({
   cartId,
   allowVoucherApply,
   voucherifyCustomer,
-  setQualifications,
+  setVoucherifyCustomer,
+  addToQualifications,
 }) => {
-  const loyaltyBalance = qualification.loyalty_card?.balance
+  const loyaltyBalance =
+    typeof voucherifyCustomer?.loyalty?.points === 'number'
+      ? voucherifyCustomer.loyalty.points
+      : qualification.loyalty_card?.balance
   const isLoyalty = qualification.type === 'LOYALTY_CARD'
 
   const { user } = useAuth()
@@ -298,7 +302,18 @@ export const Qualification = ({
                   </Box>
                   {(qualification.rewards || []).map((reward) => (
                     <Box key={reward.reward.id}>
-                      <Box>{reward.reward.name}</Box>
+                      <Box>
+                        {reward.reward.name}
+                        {reward?.assignment?.parameters?.loyalty?.points && (
+                          <>
+                            <br />
+                            {
+                              reward?.assignment?.parameters?.loyalty?.points
+                            }{' '}
+                            points
+                          </>
+                        )}
+                      </Box>
                       <Box>
                         <Button
                           className="cta-button"
@@ -307,7 +322,8 @@ export const Qualification = ({
                             isBeingApplied ||
                             alreadyAppliedCodes.length >= 5 ||
                             loyaltyBalance <
-                              (reward?.assignment?.parameters?.points || 0)
+                              (reward?.assignment?.parameters?.loyalty
+                                ?.points || 0)
                           }
                           variant={'contained'}
                           sx={{
@@ -335,15 +351,33 @@ export const Qualification = ({
                                   }),
                                 }
                               )
-                              console.log(result)
-                              if (typeof setQualifications === 'function') {
-                                await new Promise((r) => setTimeout(r, 2000))
-                                await setQualifications()
+                              if (
+                                typeof result.voucher?.loyalty_card?.balance ===
+                                  'number' &&
+                                voucherifyCustomer.loyalty instanceof Object
+                              ) {
+                                setVoucherifyCustomer({
+                                  ...voucherifyCustomer,
+                                  loyalty: {
+                                    ...(voucherifyCustomer.loyalty || {}),
+                                    points: result.voucher.loyalty_card.balance,
+                                  },
+                                })
                               }
-                              console.log(123)
-                              setIsBeingApplied(true)
+                              if (
+                                result?.reward?.voucher instanceof Object &&
+                                typeof addToQualifications === 'function'
+                              ) {
+                                addToQualifications({
+                                  ...result.reward.voucher,
+                                  qualification: {
+                                    id: result.voucher.code,
+                                    object: 'voucher',
+                                  },
+                                })
+                              }
                             } catch (e) {}
-                            setIsBeingApplied(true)
+                            setIsBeingApplied(false)
                           }}
                         >
                           <img
@@ -352,7 +386,7 @@ export const Qualification = ({
                             alt="pencil"
                           />
                           {loyaltyBalance <
-                          (reward?.assignment?.parameters?.points || 0)
+                          (reward?.assignment?.parameters?.loyalty?.points || 0)
                             ? 'not enough points'
                             : alreadyAppliedCodes.length >= 5
                             ? 'You have reached promotions limit'

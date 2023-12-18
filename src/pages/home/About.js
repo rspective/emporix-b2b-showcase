@@ -42,36 +42,7 @@ const About = () => {
   const { user } = useAuth()
   const [qualifications, setQualifications] = useState([])
   const [voucherifyCustomer, setVoucherifyCustomer] = useState()
-
-  const getAndSetQualifications = async (customer) => {
-    const emporixCart = cartAccount?.id ? await getCart(cartAccount.id) : {}
-    const items = mapItemsToVoucherifyOrdersItems(
-      mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
-    )
-    const qualifications = uniqBy(
-      items
-        ? await getQualificationsWithItemsExtended(
-            'AUDIENCE_ONLY',
-            items,
-            customer || voucherifyCustomer
-          )
-        : [].concat(
-            ...(await Promise.all([
-              await getQualificationsWithItemsExtended(
-                'AUDIENCE_ONLY',
-                items,
-                customer || voucherifyCustomer
-              ),
-              await getQualificationsWithItemsExtended(
-                'PRODUCTS_DISCOUNT',
-                items,
-                customer || voucherifyCustomer
-              ),
-            ]))
-          )
-    )
-    setQualifications(qualifications)
-  }
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     ;(async () => {
@@ -86,7 +57,38 @@ const About = () => {
           console.log(err)
         }
       }
-      getAndSetQualifications(customer)
+      const emporixCart = cartAccount?.id ? await getCart(cartAccount.id) : {}
+      const items = mapItemsToVoucherifyOrdersItems(
+        mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
+      )
+      const qualifications = uniqBy(
+        items
+          ? await getQualificationsWithItemsExtended(
+              'AUDIENCE_ONLY',
+              items,
+              customer || voucherifyCustomer
+            )
+          : [].concat(
+              ...(await Promise.all([
+                await getQualificationsWithItemsExtended(
+                  'AUDIENCE_ONLY',
+                  items,
+                  customer || voucherifyCustomer
+                ),
+                await getQualificationsWithItemsExtended(
+                  'PRODUCTS_DISCOUNT',
+                  items,
+                  customer || voucherifyCustomer
+                ),
+              ]))
+            )
+      )
+      setQualifications(
+        qualifications.sort((q1, q2) =>
+          q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+        )
+      )
+      setIsLoading(false)
     })()
   }, [user])
 
@@ -130,17 +132,24 @@ const About = () => {
             <div className="text-[32px]/[64px] font-semibold w-full text-center">
               Promotions
             </div>
-            {qualifications.map((qualification) => (
+            {qualifications.map((qualification, index) => (
               <Qualification
-                key={qualification.id}
+                key={qualification.id + voucherifyCustomer?.loyalty?.points}
                 qualification={qualification}
                 voucherifyCustomer={voucherifyCustomer}
-                setQualifications={getAndSetQualifications}
+                addToQualifications={(voucher) => {
+                  setQualifications([
+                    ...qualifications.slice(0, index + 1),
+                    voucher,
+                    ...qualifications.slice(index + 1),
+                  ])
+                }}
+                setVoucherifyCustomer={setVoucherifyCustomer}
               />
             ))}
             {qualifications.length === 0 && (
               <Box sx={{ flex: 1, textAlign: 'center' }}>
-                <div>No promotions found</div>
+                <div>{isLoading ? 'Loading...' : 'No promotions found'}</div>
               </Box>
             )}
           </Box>

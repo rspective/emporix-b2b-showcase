@@ -16,6 +16,7 @@ export const updateCart = async ({
   codesToRemove,
   newPromotionCodes,
   customer,
+  context,
 }) => {
   if (!emporixCartId) {
     return {
@@ -32,6 +33,7 @@ export const updateCart = async ({
         codesToRemove,
         newPromotionCodes,
         customer,
+        context,
       })
     )
     const { applicableCoupons } = validationResult

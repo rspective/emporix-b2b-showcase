@@ -9,6 +9,7 @@ export const buildIntegrationCartFromEmporixCart = ({
   newPromotionCodes,
   customer,
   voucherifyCustomer,
+  context,
 }) => {
   const newPromotionsObjects =
     newPromotionCodes?.map((code) => {
@@ -56,10 +57,10 @@ export const buildIntegrationCartFromEmporixCart = ({
   return {
     id: emporixCart.id,
     customer:
-      voucherifyCustomer ||
-      mapEmporixUserToVoucherifyCustomer(customer),
+      voucherifyCustomer || mapEmporixUserToVoucherifyCustomer(customer),
     sessionKey: emporixCart?.mixins?.voucherify?.sessionKey,
     items: mapEmporixItemsToVoucherifyProducts(emporixCart?.items || []),
     coupons,
+    context,
   }
 }

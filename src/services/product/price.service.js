@@ -1,9 +1,12 @@
 import ApiRequest from '../index'
-import { ACCESS_TOKEN } from '../../constants/localstorage'
-import { priceApi } from '../service.config'
+import { ACCESS_TOKEN, TENANT } from '../../constants/localstorage'
+import { priceApiByContext } from '../service.config'
 
 const PriceService = () => {
   const getPriceWithProductIds = async (product_ids = []) => {
+    if (!product_ids?.length) {
+      return []
+    }
     const accessToken = localStorage.getItem(ACCESS_TOKEN)
     const headers = {
       'X-Version': 'v2',
@@ -25,8 +28,9 @@ const PriceService = () => {
         },
       })
     })
-    const res = await ApiRequest(priceApi(), 'post', data, headers)
-    return res.data
+
+    let res = await ApiRequest(priceApiByContext(), 'post', data, headers)
+    return res.data || []
   }
   return {
     getPriceWithProductIds,

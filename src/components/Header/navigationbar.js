@@ -245,17 +245,12 @@ const Navbar = () => {
   const { fields } = useContentful()
   useEffect(() => {
     setCartTotal(cartAccount.items.length || 0)
-    if (
-      cartAccount &&
-      cartAccount.subtotalAggregate &&
-      cartAccount.subtotalAggregate.grossValue
-    ) {
-      setCartTotalPrice(
-        cartAccount.totalPrice.amount +
-          (+cartAccount.totalPrice.amount *
-            cartAccount?.taxAggregate.lines[0].rate) /
-            100
+    if (typeof cartAccount?.subtotalAggregate?.grossValue === 'number') {
+      const discount = (cartAccount.discounts || []).reduce(
+        (accumulator, currentValue) => accumulator + currentValue.amount,
+        0
       )
+      setCartTotalPrice(cartAccount.subtotalAggregate.grossValue - discount)
     } else {
       setCartTotalPrice(0)
     }

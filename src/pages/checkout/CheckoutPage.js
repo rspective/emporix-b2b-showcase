@@ -25,7 +25,6 @@ import {
   getCustomer,
   getQualificationsWithItemsExtended,
 } from '../../integration/voucherify/voucherifyApi'
-import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 import { redeemCart } from '../../integration/voucherify/redeemCart'
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
 
@@ -280,7 +279,14 @@ const CheckoutPage = () => {
         mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
       )
       setQualifications(
-        await getQualificationsWithItemsExtended('ALL', items, customer)
+        (await getQualificationsWithItemsExtended('ALL', items, customer)).sort(
+          (q1, q2) =>
+            q1.type === 'LOYALTY_CARD'
+              ? -1
+              : q2.type === 'LOYALTY_CARD'
+              ? 1
+              : -1
+        )
       )
     })()
   }, [cartAccount, user])
@@ -388,11 +394,20 @@ const CheckoutPage = () => {
                   flexDirection: 'column',
                 }}
               >
-                {qualifications?.map((qualification) => (
+                {qualifications?.map((qualification, index) => (
                   <Qualification
                     key={qualification.id}
                     qualification={qualification}
                     allowVoucherApply={true}
+                    voucherifyCustomer={voucherifyCustomer}
+                    addToQualifications={(voucher) => {
+                      setQualifications([
+                        ...qualifications.slice(0, index + 1),
+                        voucher,
+                        ...qualifications.slice(index + 1),
+                      ])
+                    }}
+                    setVoucherifyCustomer={setVoucherifyCustomer}
                   />
                 ))}
               </Box>

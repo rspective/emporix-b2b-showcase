@@ -72,10 +72,9 @@ export const Qualification = ({
   setVoucherifyCustomer,
   addToQualifications,
 }) => {
-  const loyaltyBalance =
-    typeof voucherifyCustomer?.loyalty?.points === 'number'
-      ? voucherifyCustomer.loyalty.points
-      : qualification.loyalty_card?.balance
+  const [loyaltyBalance, setLoyaltyBalance] = useState(
+    qualification.loyalty_card?.balance
+  )
   const isLoyalty = qualification.type === 'LOYALTY_CARD'
 
   const { user } = useAuth()
@@ -218,6 +217,16 @@ export const Qualification = ({
               : description}
           </span>
         </Box>
+        {isLoyalty && (
+          <Box sx={{ fontSize: '14px', fontWeight: 600 }}>
+            {loyaltyBalance ? (
+              <>
+                Loyalty balance: {loyaltyBalance}
+                <br />
+              </>
+            ) : undefined}
+          </Box>
+        )}
         {termsAndConditions && (
           <Box
             sx={{
@@ -295,7 +304,7 @@ export const Qualification = ({
             <Box sx={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
               {qualification.type === 'LOYALTY_CARD' ? (
                 <>
-                  <Box sx={{ fontWeight: 500, mt: 1 }}>
+                  <Box sx={{ fontWeight: 500, mt: 3 }}>
                     {qualification.rewards?.length
                       ? 'Rewards:'
                       : 'No rewards found'}
@@ -353,16 +362,11 @@ export const Qualification = ({
                               )
                               if (
                                 typeof result.voucher?.loyalty_card?.balance ===
-                                  'number' &&
-                                voucherifyCustomer.loyalty instanceof Object
+                                'number'
                               ) {
-                                setVoucherifyCustomer({
-                                  ...voucherifyCustomer,
-                                  loyalty: {
-                                    ...(voucherifyCustomer.loyalty || {}),
-                                    points: result.voucher.loyalty_card.balance,
-                                  },
-                                })
+                                setLoyaltyBalance(
+                                  result.voucher.loyalty_card.balance
+                                )
                               }
                               if (
                                 result?.reward?.voucher instanceof Object &&

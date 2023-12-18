@@ -120,15 +120,13 @@ const About = () => {
         children={
           <Box
             sx={{
+              mt: -2,
               mb: 3,
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
             }}
           >
-            <Box sx={{ fontWeight: 600, fontSize: 20 }}>
-              Your loyalty points: {voucherifyCustomer?.loyalty?.points || 0}
-            </Box>
             <div className="text-[32px]/[64px] font-semibold w-full text-center">
               Promotions
             </div>

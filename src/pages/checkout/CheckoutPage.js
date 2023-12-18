@@ -371,9 +371,6 @@ const CheckoutPage = () => {
         <Box sx={{ mt: -2, display: 'flex', flexDirection: 'column', gap: 1 }}>
           {qualifications.length ? (
             <Box>
-              <Box sx={{ fontWeight: 600, fontSize: 20 }}>
-                Your loyalty points: {voucherifyCustomer?.loyalty?.points || 0}
-              </Box>
               <Box
                 sx={{
                   flex: 1,

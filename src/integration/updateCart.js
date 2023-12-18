@@ -34,6 +34,7 @@ export const updateCart = async ({
         customer,
       })
     )
+    console.log(validationResult)
     const { applicableCoupons } = validationResult
     const { items } = buildIntegrationCartFromEmporixCart({ emporixCart })
     const discountsDetails = getDiscountsValues(applicableCoupons, items)

@@ -29,6 +29,7 @@ import {
   releaseValidationSession,
   validateStackableVouchers,
 } from '../voucherifyApi'
+import { getProductsToAdd } from './mappers/getProductsToAdd'
 
 const defaultResponse = {
   availablePromotions: [],
@@ -51,11 +52,11 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     customer,
   } = cart
 
-  if(customer){
-    try{
+  if (customer) {
+    try {
       //don't wait
       getClient().customers.create(customer)
-    }catch(err){
+    } catch (err) {
       console.log('Could not update Customer')
     }
   }
@@ -183,7 +184,8 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     )
   }
 
-  const productsToAdd = [] //getProductsToAdd(validatedCoupons, [])
+  console.log(couponsFromRequest)
+  const productsToAdd = getProductsToAdd(validatedCoupons, couponsFromRequest)
 
   const applicableCoupons = setBannerOnValidatedPromotions(
     filterOutRedeemablesIfCodeIn(

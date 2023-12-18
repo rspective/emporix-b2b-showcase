@@ -53,6 +53,7 @@ export function stackableRedeemablesResponseToUnitStackableRedeemablesResultDisc
     if (!freeUnits.length) {
       return []
     }
+    console.log(freeUnits)
     return freeUnits
   })
 }

@@ -47,7 +47,7 @@ const About = () => {
   useEffect(() => {
     ;(async () => {
       const customer = mapEmporixUserToVoucherifyCustomer(user)
-      if (customer.source_id) {
+      if (customer?.source_id) {
         try {
           const voucherifyCustomer = await getCustomer(customer.source_id)
           if (voucherifyCustomer.id) {

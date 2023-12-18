@@ -18,6 +18,9 @@ import { useLanguage } from '../../context/language-provider'
 import { getBrand } from 'services/product/brand.service'
 import { getLabel } from 'services/product/labels'
 import { useCurrency } from 'context/currency-context'
+import { useAuth } from '../../context/auth-provider'
+import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
+import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
 
 const ProductList = () => {
   return (
@@ -28,7 +31,31 @@ const ProductList = () => {
 }
 
 export const ProductDetails = () => {
+  const { user } = useAuth()
   const { productId } = useParams()
+  const [qualifications, setQualifications] = useState([])
+
+  useEffect(() => {
+    setQualifications([])
+    ;(async () => {
+      const customer = mapEmporixUserToVoucherifyCustomer(user)
+      setQualifications(
+        (
+          await getQualificationsWithItemsExtended(
+            'PRODUCTS',
+            [
+              {
+                quantity: 1,
+                product_id: productId,
+              },
+            ],
+            customer
+          )
+        ).filter((q) => q.type !== 'LOYALTY_CARD')
+      )
+    })()
+  }, [productId])
+
   const [product, setProduct] = useState({
     loading: true,
     data: null,
@@ -145,6 +172,7 @@ export const ProductDetails = () => {
           product={product.data}
           brand={brand}
           labels={labels}
+          qualifications={qualifications}
         />
       )}
     </Layout>

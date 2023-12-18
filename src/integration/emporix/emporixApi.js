@@ -197,6 +197,7 @@ export const getCart = async (cartId) => {
   )
   if (cartRaw.status !== 200) {
     console.log('error', cartRaw)
+    return {}
   }
   return await cartRaw.json()
 }

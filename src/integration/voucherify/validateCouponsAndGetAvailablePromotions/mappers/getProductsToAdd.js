@@ -3,15 +3,11 @@ import {
   stackableResponseToUnitTypeRedeemables,
 } from './redeemableOperationFunctions'
 import { couponsStatusNew } from './couponsOperationFunctions'
-import ApiRequest from '../../../../services'
-import { priceApi } from '../../../../services/service.config'
-import { getEmporixAPIAccessToken } from '../../../emporix/getEmporixAPIAccessToken'
 
 export async function getProductsToAdd(
   validatedCoupons,
   couponsFromRequest,
-  itemsInCart,
-  context
+  itemsInCart
 ) {
   const newCoupons = couponsStatusNew(couponsFromRequest).map(
     (couponData) => couponData.code
@@ -57,7 +53,7 @@ export async function getProductsToAdd(
     return accumulator
   }, {})
 
-  const calculatedGroupedUnitsToAdd = Object.values(groupedUnitsToAdd)
+  return Object.values(groupedUnitsToAdd)
     .filter(
       (groupedUnitToAdd) =>
         groupedUnitToAdd.must_add > 0 ||
@@ -70,62 +66,4 @@ export async function getProductsToAdd(
           ? groupedUnitToAdd.min_units
           : groupedUnitToAdd.currentQuantity) + groupedUnitToAdd.must_add,
     }))
-  return calculatedGroupedUnitsToAdd
-  const missingPricesFor = calculatedGroupedUnitsToAdd
-    .filter((calculatedGroupedUnitToAdd) => !calculatedGroupedUnitToAdd.price)
-    .map((calculatedGroupedUnitsToAdd) => calculatedGroupedUnitsToAdd.source_id)
-  if (!missingPricesFor.length) {
-    return calculatedGroupedUnitsToAdd
-  }
-  try {
-    const missingPrices = missingPricesFor.length
-      ? (
-          await ApiRequest(
-            priceApi(),
-            'post',
-            {
-              targetCurrency: context.currency,
-              siteCode: context.siteCode,
-              targetLocation: { countryCode: context.targetLocation },
-              items: missingPricesFor.map((source_id) => ({
-                itemId: {
-                  itemType: 'PRODUCT',
-                  includesTax: false,
-                  id: source_id,
-                },
-                quantity: {
-                  quantity: 1,
-                },
-              })),
-            },
-            {
-              'X-Version': 'v2',
-              Authorization: `Bearer ${await getEmporixAPIAccessToken()}`,
-              'Content-Type': 'application/json',
-            }
-          )
-        ).data
-      : []
-
-    return calculatedGroupedUnitsToAdd.map((calculatedGroupedUnitToAdd) => {
-      const { source_id, price } = calculatedGroupedUnitToAdd
-      if (price) {
-        return calculatedGroupedUnitToAdd
-      }
-
-      const priceObject = missingPrices.find(
-        (priceObject) => priceObject.itemId?.id === source_id
-      )
-      return {
-        ...calculatedGroupedUnitToAdd,
-        price:
-          priceObject.effectiveAmount ||
-          priceObject.originalValue ||
-          priceObject.totalValue,
-      }
-    })
-  } catch (e) {
-    console.log(e)
-    return calculatedGroupedUnitsToAdd
-  }
 }

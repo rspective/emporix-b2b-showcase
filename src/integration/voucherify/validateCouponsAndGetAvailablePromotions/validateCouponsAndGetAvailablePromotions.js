@@ -166,8 +166,7 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
   const productsToAdd = await getProductsToAdd(
     validatedCoupons,
     couponsFromRequest,
-    items,
-    context
+    items
   )
 
   //addProductsToEmporix

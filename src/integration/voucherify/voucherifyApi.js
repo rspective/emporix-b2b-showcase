@@ -1,7 +1,7 @@
 import { mapItemsToVoucherifyOrdersItems } from './validateCouponsAndGetAvailablePromotions/mappers/product'
 import { VoucherifyServerSide } from '@voucherify/sdk'
 import getContentfulEntryFields from './getContentfulEntryFields'
-import {getCustomerAdditionalMetadata} from "../../helpers/getCustomerAdditionalMetadata";
+import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 
 export function asyncMap(arr, asyncFn) {
   return Promise.all(arr.map(asyncFn))
@@ -42,7 +42,7 @@ const getQualificationsWithItems = async (
           ...getCustomerAdditionalMetadata(),
           preferredCurrency: customerMetadata.preferredCurrency,
           preferredLanguage: customerMetadata.preferredLanguage,
-        }
+        },
       },
       customer,
       options: {
@@ -135,6 +135,22 @@ export const getAllQualificationsWithItems = async (
   return qualifications
 }
 
+export const getLoyaltyMemberRewards = async (qualificationExtended) => {
+  if (
+    !(
+      qualificationExtended.type === 'LOYALTY_CARD' &&
+      qualificationExtended.code
+    )
+  ) {
+    return qualificationExtended
+  }
+  try {
+    const response = await listLoyaltyTierRewards(qualificationExtended.code)
+    qualificationExtended.rewards = response?.data || []
+  } catch (err) {}
+  return qualificationExtended
+}
+
 export const getQualificationsWithItemsExtended = async (
   scenario, // ALL, CUSTOMER_WALLET, AUDIENCE_ONLY, PRODUCTS, PRODUCTS_DISCOUNTS, PROMOTION_STACKS
   items,
@@ -162,9 +178,9 @@ export const getQualificationsWithItemsExtended = async (
     qualifications,
     getPromotionTiersOrVoucherAddCMSEntryIfPossible
   )
-  return qualificationsExtended.filter(
-    (promotionOrVoucher) => promotionOrVoucher?.id
-  )
+  return (
+    await asyncMap(qualificationsExtended, getLoyaltyMemberRewards)
+  ).filter((promotionOrVoucher) => promotionOrVoucher?.id)
 }
 
 export const voucherifyFetchAPI = async ({ body, method = 'GET', path }) => {
@@ -179,6 +195,10 @@ export const voucherifyFetchAPI = async ({ body, method = 'GET', path }) => {
   })
 }
 
+export const redeemReward = async (campaignId, memberId, params) => {
+  return await getClient().loyalties.redeemReward(campaignId, memberId, params)
+}
+
 export const validateStackableVouchers = async (request) => {
   return await getClient().validations.validateStackable(request)
 }
@@ -189,6 +209,14 @@ export const redeemStackableVouchers = async (request) => {
 
 export const createOrder = async (request) => {
   return await getClient().orders.create(request)
+}
+
+export const getCustomer = async (customerId) => {
+  return await getClient().customers.get(customerId)
+}
+
+export const listLoyaltyTierRewards = async (memberId) => {
+  return await getClient().loyalties.listMemberRewards(memberId)
 }
 
 export const getAvailablePromotions = async (cart) => {

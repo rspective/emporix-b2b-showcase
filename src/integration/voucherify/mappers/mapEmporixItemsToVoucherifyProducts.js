@@ -21,6 +21,7 @@ export const mapEmporixItemsToVoucherifyProducts = (items) => {
           quantity: effectiveQuantity || quantity,
           price,
           amount,
+          related_object: 'product',
         }
       }
       return {
@@ -28,6 +29,7 @@ export const mapEmporixItemsToVoucherifyProducts = (items) => {
         quantity: effectiveQuantity || quantity,
         price: Math.round(itemPrice.amount / (effectiveQuantity || quantity)),
         amount: Math.round(itemPrice.amount * 100),
+        related_object: 'product',
       }
     }) || []
   )

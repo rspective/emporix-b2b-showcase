@@ -12,7 +12,10 @@ import {
 import { Box } from '@mui/system'
 import { useAuth } from '../../context/auth-provider'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
-import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
+import {
+  getCustomer,
+  getQualificationsWithItemsExtended,
+} from '../../integration/voucherify/voucherifyApi'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { getCart } from '../../integration/emporix/emporixApi'
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
@@ -27,6 +30,7 @@ import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAddition
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
 
 const CartPage = () => {
+  const [voucherifyCustomer, setVoucherifyCustomer] = useState()
   const minWidth900px = useMediaQuery('(min-width:900px)')
   const { cartAccount } = useCart()
   const { user } = useAuth()
@@ -38,12 +42,15 @@ const CartPage = () => {
   const [cartId, setCartId] = useState(undefined)
 
   const loadCustomerWalletQualifications = async (items, customer) => {
-    const customerWalletQualifications =
+    const customerWalletQualifications = (
       await getQualificationsWithItemsExtended(
         'CUSTOMER_WALLET',
         items,
         customer
       )
+    ).sort((q1, q2) =>
+      q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+    )
     setCustomerWalletQualifications(customerWalletQualifications)
     return customerWalletQualifications
   }
@@ -56,10 +63,10 @@ const CartPage = () => {
     const qualificationsIdsSoFar = allQualificationsSoFar.map(
       (qualification) => qualification.id
     )
-    const qualificationsAllScenario = await getQualificationsWithItemsExtended(
-      'ALL',
-      items,
-      customer
+    const qualificationsAllScenario = (
+      await getQualificationsWithItemsExtended('ALL', items, customer)
+    ).sort((q1, q2) =>
+      q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
     )
     setAllOtherQualifications(
       qualificationsAllScenario.filter(
@@ -88,14 +95,22 @@ const CartPage = () => {
     )
     const bundleQualifications = getOnlyBundleQualifications(allQualifications)
     //don't wait
-    setBundleQualificationsEnriched(bundleQualifications)
+    setBundleQualificationsEnriched(
+      bundleQualifications.sort((q1, q2) =>
+        q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+      )
+    )
     const allQualificationsWithoutBundles =
       filterOutBundleQualifications(allQualifications)
     const allQualificationsPerProducts = getQualificationsPerProducts(
       allQualificationsWithoutBundles,
       productsIds
     )
-    setProductQualifications(allQualificationsPerProducts)
+    setProductQualifications(
+      allQualificationsPerProducts.sort((q1, q2) =>
+        q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+      )
+    )
     return allQualifications
   }
   const [cartItemIds, setCartItemIds] = useState([])
@@ -106,22 +121,37 @@ const CartPage = () => {
         return
       }
       setCartId(cartAccount?.id)
-      const customer = mapEmporixUserToVoucherifyCustomer(
-        user
-      )
-      const emporixCart = await getCart(cartAccount.id)
-      const items = mapItemsToVoucherifyOrdersItems(
-        mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
-      )
-      const allQualificationsSoFar = [].concat(
-        ...(await Promise.all([
-          await setProductsQualificationsFunction(items, customer),
-          await loadCustomerWalletQualifications(items, customer),
-        ]))
-      )
-      await loadALLQualifications(items, customer, allQualificationsSoFar)
+      setQualifications()
     })()
   }, [cartAccount?.items, user])
+
+  const setQualifications = async () => {
+    if (!cartAccount?.id) {
+      return
+    }
+    const customer = mapEmporixUserToVoucherifyCustomer(user)
+    if (customer.source_id) {
+      try {
+        const voucherifyCustomer = await getCustomer(customer.source_id)
+        if (voucherifyCustomer.id) {
+          setVoucherifyCustomer(voucherifyCustomer)
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    }
+    const emporixCart = await getCart(cartAccount.id)
+    const items = mapItemsToVoucherifyOrdersItems(
+      mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
+    )
+    const allQualificationsSoFar = [].concat(
+      ...(await Promise.all([
+        await setProductsQualificationsFunction(items, customer),
+        await loadCustomerWalletQualifications(items, customer),
+      ]))
+    )
+    await loadALLQualifications(items, customer, allQualificationsSoFar)
+  }
 
   useEffect(() => {
     const items = cartAccount?.items || []
@@ -264,7 +294,7 @@ const CartPage = () => {
                     flexDirection: 'column',
                   }}
                 >
-                  {bundleQualifications?.map((qualification) => (
+                  {bundleQualifications?.map((qualification, index) => (
                     <Qualification
                       key={qualification.id}
                       qualification={qualification}
@@ -273,6 +303,15 @@ const CartPage = () => {
                       addProducts={(qualification?.relatedTo || []).filter(
                         (id) => !cartItemIds.includes(id)
                       )}
+                      voucherifyCustomer={voucherifyCustomer}
+                      addToQualifications={(voucher) => {
+                        setBundleQualifications([
+                          ...bundleQualifications.slice(0, index + 1),
+                          voucher,
+                          ...bundleQualifications.slice(index + 1),
+                        ])
+                      }}
+                      setVoucherifyCustomer={setVoucherifyCustomer}
                     />
                   ))}
                 </Box>
@@ -280,6 +319,10 @@ const CartPage = () => {
             ) : undefined}
             {allOtherQualifications.length ? (
               <Box>
+                <Box sx={{ fontWeight: 600, fontSize: 20 }}>
+                  Your loyalty points:{' '}
+                  {voucherifyCustomer?.loyalty?.points || 0}
+                </Box>
                 <Box
                   sx={{
                     fontWeight: 'bold',
@@ -299,11 +342,21 @@ const CartPage = () => {
                     flexDirection: 'column',
                   }}
                 >
-                  {allOtherQualifications?.map((qualification) => (
+                  {allOtherQualifications?.map((qualification, index) => (
                     <Qualification
                       key={qualification.id}
                       qualification={qualification}
                       allowVoucherApply={true}
+                      voucherifyCustomer={voucherifyCustomer}
+                      setQualifications={setQualifications}
+                      addToQualifications={(voucher) => {
+                        setAllOtherQualifications([
+                          ...allOtherQualifications.slice(0, index + 1),
+                          voucher,
+                          ...allOtherQualifications.slice(index + 1),
+                        ])
+                      }}
+                      setVoucherifyCustomer={setVoucherifyCustomer}
                     />
                   ))}
                 </Box>
@@ -347,6 +400,16 @@ const CartPage = () => {
                         key={qualification.id}
                         qualification={qualification}
                         allowVoucherApply={true}
+                        voucherifyCustomer={voucherifyCustomer}
+                        setQualifications={setQualifications}
+                        addToQualifications={(voucher, index) => {
+                          setCustomerWalletQualifications([
+                            ...customerWalletQualifications.slice(0, index + 1),
+                            voucher,
+                            ...customerWalletQualifications.slice(index + 1),
+                          ])
+                        }}
+                        setVoucherifyCustomer={setVoucherifyCustomer}
                       />
                     ))}
                   </>

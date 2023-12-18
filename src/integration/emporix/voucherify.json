@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "description": "Schema for voucherify mixins.",
+  "properties": {
+    "sessionKey": {
+      "type": ["string", "null"],
+      "description": "Session Key"
+    },
+    "appliedCoupons": {
+      "type": ["array", "null"],
+      "items": {
+        "type" : "object",
+        "properties": {
+          "code" : {
+            "type": ["string", "null"],
+            "description": "Coupon"
+          },
+          "coupon" : {
+            "type": ["string", "null"],
+            "description": "Coupon"
+          },
+          "status" : {
+            "type": ["string", "null"],
+            "description": "Status"
+          },
+          "type" : {
+            "type": ["string", "null"],
+            "description": "Type"
+          },
+          "banner" : {
+            "type": ["string", "null"],
+            "description": "Banner"
+          }
+        }
+      }
+    },
+    "availablePromotions" : {
+      "type": ["array", "null"],
+      "items": {
+        "type" : "object",
+        "properties": {
+          "coupon" : {
+            "type": ["string", "null"],
+            "description": "Coupon"
+          },
+          "status" : {
+            "type": ["string", "null"],
+            "description": "Status"
+          },
+          "type" : {
+            "type": ["string", "null"],
+            "description": "Type"
+          },
+          "banner" : {
+            "type": ["string", "null"],
+            "description": "Banner"
+          }
+        }
+      }
+    },
+    "discountDetails" : {
+      "type": ["array", "null"],
+      "items": {
+        "type" : "object",
+        "properties": {
+          "amount" : {
+            "type": ["number", "null"],
+            "description": "Amount"
+          },
+          "discount" : {
+            "type": ["number", "null"],
+            "description": "Discount"
+          },
+          "price" : {
+            "type": ["number", "null"],
+            "description": "Price"
+          },
+          "quantity" : {
+            "type": ["number", "null"],
+            "description": "Quantity"
+          },
+          "source_id" : {
+            "type": ["string", "null"],
+            "description": "Source ID"
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,14 +4,23 @@ import landingBg from '../../assets/landing_bg.png'
 import { useAuth } from '../../context/auth-provider'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
 import { Box } from '@mui/system'
-import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
+import {
+  getCustomer,
+  getQualificationsWithItemsExtended,
+  listLoyaltyTierRewards,
+  listMemberLoyaltyTiers,
+} from '../../integration/voucherify/voucherifyApi'
 import { Qualification } from '../shared/Qualification'
-import { CUSTOMER_ADDITIONAL_METADATA } from '../../constants/localstorage'
-import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 import './about.css'
 import Collapse from '@mui/material/Collapse'
+import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
+import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
+import { getCart } from '../../integration/emporix/emporixApi'
+import { useCart } from '../../context/cart-provider'
+import { uniqBy } from 'lodash'
 
 const About = () => {
+  const { cartAccount } = useCart()
   const { fields } = useContentful()
   const [introImageUrl, setIntroImageUrl] = useState('')
   const [showMoreOpen, setShowMoreOpen] = useState(false)
@@ -32,15 +41,54 @@ const About = () => {
 
   const { user } = useAuth()
   const [qualifications, setQualifications] = useState([])
+  const [voucherifyCustomer, setVoucherifyCustomer] = useState()
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     ;(async () => {
-      const customer = mapEmporixUserToVoucherifyCustomer(
-        user
+      const customer = mapEmporixUserToVoucherifyCustomer(user)
+      if (customer.source_id) {
+        try {
+          const voucherifyCustomer = await getCustomer(customer.source_id)
+          if (voucherifyCustomer.id) {
+            setVoucherifyCustomer(voucherifyCustomer)
+          }
+        } catch (err) {
+          console.log(err)
+        }
+      }
+      const emporixCart = cartAccount?.id ? await getCart(cartAccount.id) : {}
+      const items = mapItemsToVoucherifyOrdersItems(
+        mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
+      )
+      const qualifications = uniqBy(
+        items
+          ? await getQualificationsWithItemsExtended(
+              'AUDIENCE_ONLY',
+              items,
+              customer || voucherifyCustomer
+            )
+          : [].concat(
+              ...(await Promise.all([
+                await getQualificationsWithItemsExtended(
+                  'AUDIENCE_ONLY',
+                  items,
+                  customer || voucherifyCustomer
+                ),
+                await getQualificationsWithItemsExtended(
+                  'PRODUCTS_DISCOUNT',
+                  items,
+                  customer || voucherifyCustomer
+                ),
+              ]))
+            )
       )
       setQualifications(
-        await getQualificationsWithItemsExtended('AUDIENCE_ONLY', [], customer)
+        qualifications.sort((q1, q2) =>
+          q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+        )
       )
+      setIsLoading(false)
     })()
   }, [user])
 
@@ -78,13 +126,32 @@ const About = () => {
               gap: 2,
             }}
           >
-            <div className='text-[32px]/[64px] font-semibold w-full text-center'>Promotions</div>
-            {qualifications.map((qualification) => (
+            <Box sx={{ fontWeight: 600, fontSize: 20 }}>
+              Your loyalty points: {voucherifyCustomer?.loyalty?.points || 0}
+            </Box>
+            <div className="text-[32px]/[64px] font-semibold w-full text-center">
+              Promotions
+            </div>
+            {qualifications.map((qualification, index) => (
               <Qualification
-                key={qualification.id}
+                key={qualification.id + voucherifyCustomer?.loyalty?.points}
                 qualification={qualification}
+                voucherifyCustomer={voucherifyCustomer}
+                addToQualifications={(voucher) => {
+                  setQualifications([
+                    ...qualifications.slice(0, index + 1),
+                    voucher,
+                    ...qualifications.slice(index + 1),
+                  ])
+                }}
+                setVoucherifyCustomer={setVoucherifyCustomer}
               />
             ))}
+            {qualifications.length === 0 && (
+              <Box sx={{ flex: 1, textAlign: 'center' }}>
+                <div>{isLoading ? 'Loading...' : 'No promotions found'}</div>
+              </Box>
+            )}
           </Box>
         }
         collapsedSize={550}
@@ -98,8 +165,7 @@ const About = () => {
         >
           Show {showMoreOpen ? 'less' : 'more'}
         </div>
-        <div className={`show-more_fade ${showMoreOpen ? 'hidden' : ''}`}>
-        </div>
+        <div className={`show-more_fade ${showMoreOpen ? 'hidden' : ''}`}></div>
       </div>
     </>
   )

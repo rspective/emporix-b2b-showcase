@@ -120,19 +120,19 @@ const ProductListItems = ({ products, auth, displayType }) => {
     const productsIds = products.map((product) => product.id)
 
     ;(async () => {
-      const customer = mapEmporixUserToVoucherifyCustomer(
-        user
-      )
-      const allQualifications = await getQualificationsWithItemsExtended(
-        'PRODUCTS',
-        productsIds.map((productId) => {
-          return {
-            quantity: 1,
-            product_id: productId,
-          }
-        }),
-        customer
-      )
+      const customer = mapEmporixUserToVoucherifyCustomer(user)
+      const allQualifications = (
+        await getQualificationsWithItemsExtended(
+          'PRODUCTS',
+          productsIds.map((productId) => {
+            return {
+              quantity: 1,
+              product_id: productId,
+            }
+          }),
+          customer
+        )
+      ).filter((q) => q.type !== 'LOYALTY_CARD')
       let allQualificationsPerProducts = productsIds.map((productId) => {
         return {
           id: productId,
@@ -199,10 +199,7 @@ const ProductListItems = ({ products, auth, displayType }) => {
           break
         case 2:
           subItemArr.push(
-            <div
-              key={i}
-              className="w-1/3  mx-2 border border-quartz rounded"
-            >
+            <div key={i} className="w-1/3  mx-2 border border-quartz rounded">
               <EachProduct
                 key={item.id}
                 available={available}
@@ -332,11 +329,7 @@ const ProductListItems = ({ products, auth, displayType }) => {
       available = availability['k' + item.id]?.available
       itemArr.push(
         <div key={i} className="w-full my-4 items-center">
-          <EachProductRow
-            key={item.id}
-            available={available}
-            item={item}
-          />
+          <EachProductRow key={item.id} available={available} item={item} />
         </div>
       )
       // if (i !== products.length - 1)

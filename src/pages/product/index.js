@@ -21,7 +21,6 @@ import { useCurrency } from 'context/currency-context'
 import { useAuth } from '../../context/auth-provider'
 import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
-import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 
 const ProductList = () => {
   return (
@@ -39,20 +38,20 @@ export const ProductDetails = () => {
   useEffect(() => {
     setQualifications([])
     ;(async () => {
-      const customer = mapEmporixUserToVoucherifyCustomer(
-        user
-      )
+      const customer = mapEmporixUserToVoucherifyCustomer(user)
       setQualifications(
-        await getQualificationsWithItemsExtended(
-          'PRODUCTS',
-          [
-            {
-              quantity: 1,
-              product_id: productId,
-            },
-          ],
-          customer
-        )
+        (
+          await getQualificationsWithItemsExtended(
+            'PRODUCTS',
+            [
+              {
+                quantity: 1,
+                product_id: productId,
+              },
+            ],
+            customer
+          )
+        ).filter((q) => q.type !== 'LOYALTY_CARD')
       )
     })()
   }, [productId])

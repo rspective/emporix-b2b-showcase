@@ -316,8 +316,6 @@ export const Qualification = ({
                     .filter((reward) => reward?.reward?.type === 'COIN')
                     .map((reward) => (
                       <Box key={reward.reward.id}>
-                        {console.log(reward)}
-                        {console.log(activeCurrency)}
                         <Box>
                           {reward.reward.name}
                           {reward?.reward?.parameters?.coin && (
@@ -335,7 +333,11 @@ export const Qualification = ({
                             className="cta-button"
                             title="Apply Coupon"
                             disabled={
-                              isBeingApplied || alreadyAppliedCodes.length >= 5
+                              isBeingApplied ||
+                              alreadyAppliedCodes.length >= 5 ||
+                              loyaltyBalance <
+                                (reward?.reward?.parameters?.coin
+                                  .exchange_ratio || 0)
                             }
                             variant={'contained'}
                             sx={{
@@ -365,7 +367,11 @@ export const Qualification = ({
                             />
                             {alreadyAppliedCodes.length >= 5
                               ? 'You have reached coupon limit'
-                              : 'Apply'}
+                              : loyaltyBalance <
+                                (reward?.reward?.parameters?.coin
+                                  .exchange_ratio || 0)
+                              ? 'not enough points'
+                              : 'Apply Reward'}
                           </Button>
                         </Box>
                       </Box>

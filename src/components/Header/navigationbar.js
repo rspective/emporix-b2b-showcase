@@ -138,7 +138,7 @@ const Navbar = () => {
             {currencyList.map((currency) => {
               return (
                 <option key={currency.code} value={currency.code}>
-                  {currency.code}
+                  {currency.symbol}
                 </option>
               )
             })}

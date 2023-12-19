@@ -309,96 +309,99 @@ export const Qualification = ({
                       ? 'Rewards:'
                       : 'No rewards found'}
                   </Box>
-                  {(qualification.rewards || []).map((reward) => (
-                    <Box key={reward.reward.id}>
-                      <Box>
-                        {reward.reward.name}
-                        {reward?.assignment?.parameters?.loyalty?.points && (
-                          <>
-                            <br />
-                            {
-                              reward?.assignment?.parameters?.loyalty?.points
-                            }{' '}
-                            points
-                          </>
-                        )}
-                      </Box>
-                      <Box>
-                        <Button
-                          className="cta-button"
-                          title="Apply Reward"
-                          disabled={
-                            isBeingApplied ||
-                            alreadyAppliedCodes.length >= 5 ||
-                            loyaltyBalance <
-                              (reward?.assignment?.parameters?.loyalty
-                                ?.points || 0)
-                          }
-                          variant={'contained'}
-                          sx={{
-                            mt: 1,
-                            mb: '14px',
-                            borderRadius: 0,
-                            backgroundColor: '#FAC420',
-                            '&:hover': {
+                  {(qualification.rewards || [])
+                    .filter((reward) => reward?.reward?.type !== 'COIN')
+                    .map((reward) => (
+                      <Box key={reward.reward.id}>
+                        <Box>
+                          {reward.reward.name}
+                          {reward?.assignment?.parameters?.loyalty?.points && (
+                            <>
+                              <br />
+                              {
+                                reward?.assignment?.parameters?.loyalty?.points
+                              }{' '}
+                              points
+                            </>
+                          )}
+                        </Box>
+                        <Box>
+                          <Button
+                            className="cta-button"
+                            title="Apply Reward"
+                            disabled={
+                              isBeingApplied ||
+                              alreadyAppliedCodes.length >= 5 ||
+                              loyaltyBalance <
+                                (reward?.assignment?.parameters?.loyalty
+                                  ?.points || 0)
+                            }
+                            variant={'contained'}
+                            sx={{
+                              mt: 1,
+                              mb: '14px',
+                              borderRadius: 0,
                               backgroundColor: '#FAC420',
-                            },
-                          }}
-                          onClick={async () => {
-                            setIsBeingApplied(true)
-                            try {
-                              const result = await redeemReward(
-                                qualification.campaign_id,
-                                qualification.id,
-                                {
-                                  reward: { id: reward.reward.id },
-                                  order: buildIntegrationCartFromEmporixCart({
-                                    emporixCart: cartAccount
-                                      ? await getCart(cartAccount.id)
-                                      : {},
-                                    voucherifyCustomer,
-                                  }),
-                                }
-                              )
-                              if (
-                                typeof result.voucher?.loyalty_card?.balance ===
-                                'number'
-                              ) {
-                                setLoyaltyBalance(
-                                  result.voucher.loyalty_card.balance
+                              '&:hover': {
+                                backgroundColor: '#FAC420',
+                              },
+                            }}
+                            onClick={async () => {
+                              setIsBeingApplied(true)
+                              try {
+                                const result = await redeemReward(
+                                  qualification.campaign_id,
+                                  qualification.id,
+                                  {
+                                    reward: { id: reward.reward.id },
+                                    order: buildIntegrationCartFromEmporixCart({
+                                      emporixCart: cartAccount
+                                        ? await getCart(cartAccount.id)
+                                        : {},
+                                      voucherifyCustomer,
+                                    }),
+                                  }
                                 )
-                              }
-                              if (
-                                result?.reward?.voucher instanceof Object &&
-                                typeof addToQualifications === 'function'
-                              ) {
-                                addToQualifications({
-                                  ...result.reward.voucher,
-                                  qualification: {
-                                    id: result.voucher.code,
-                                    object: 'voucher',
-                                  },
-                                })
-                              }
-                            } catch (e) {}
-                            setIsBeingApplied(false)
-                          }}
-                        >
-                          <img
-                            src={pencil}
-                            className="w-4 h-4 mr-4"
-                            alt="pencil"
-                          />
-                          {loyaltyBalance <
-                          (reward?.assignment?.parameters?.loyalty?.points || 0)
-                            ? 'not enough points'
-                            : alreadyAppliedCodes.length >= 5
-                            ? 'You have reached promotions limit'
-                            : 'Apply reward'}
-                        </Button>
+                                if (
+                                  typeof result.voucher?.loyalty_card
+                                    ?.balance === 'number'
+                                ) {
+                                  setLoyaltyBalance(
+                                    result.voucher.loyalty_card.balance
+                                  )
+                                }
+                                if (
+                                  result?.reward?.voucher instanceof Object &&
+                                  typeof addToQualifications === 'function'
+                                ) {
+                                  addToQualifications({
+                                    ...result.reward.voucher,
+                                    qualification: {
+                                      id: result.voucher.code,
+                                      object: 'voucher',
+                                    },
+                                  })
+                                }
+                              } catch (e) {}
+                              setIsBeingApplied(false)
+                            }}
+                          >
+                            <img
+                              src={pencil}
+                              className="w-4 h-4 mr-4"
+                              alt="pencil"
+                            />
+                            {loyaltyBalance <
+                            (reward?.assignment?.parameters?.loyalty?.points ||
+                              0)
+                              ? 'not enough points'
+                              : alreadyAppliedCodes.length >= 5
+                              ? 'You have reached promotions limit'
+                              : 'Apply reward'}
+                          </Button>
+                        </Box>
                       </Box>
-                    </Box>
-                  ))}
+                    ))}
                 </>
               ) : (
                 <Box sx={{ display: 'flex' }}>

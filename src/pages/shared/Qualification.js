@@ -22,6 +22,7 @@ import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
 import { useCurrency } from '../../context/currency-context'
+import { isEqual } from 'lodash'
 
 const getUserId = (user) => {
   return user?.id || 'anonymous'
@@ -167,8 +168,9 @@ export const Qualification = ({
     }
     setError('')
     setIsBeingApplied(true)
+    let result
     try {
-      const result =
+      result =
         code instanceof Object && 'reward' in code
           ? await applyReward(code, user)
           : qualification.object === 'voucher'
@@ -188,10 +190,24 @@ export const Qualification = ({
       console.error(e)
     }
     setIsBeingApplied(false)
+    return result
   }
+
   const categoriesNames = (qualification.categories || [])
     .map((category) => category.name)
     .filter((e) => e)
+
+  const [infoText, setInfoText] = useState()
+
+  useEffect(() => {
+    ;(async () => {
+      if (!infoText) {
+        return
+      }
+      await new Promise((r) => setTimeout(r, 3000))
+      return setInfoText((prev) => (isEqual(prev, infoText) ? undefined : prev))
+    })()
+  }, [infoText])
 
   return (
     <Box
@@ -392,6 +408,17 @@ export const Qualification = ({
                             </>
                           )}
                         </Box>
+                        {infoText?.rewardId === reward.reward.id && (
+                          <Box
+                            sx={{
+                              fontWeight: 800,
+                              color: infoText?.error ? 'red' : undefined,
+                            }}
+                          >
+                            {infoText?.error}
+                            {infoText?.info}
+                          </Box>
+                        )}
                         <Box>
                           <Button
                             className="cta-button"
@@ -448,8 +475,19 @@ export const Qualification = ({
                                       object: 'voucher',
                                     },
                                   })
+                                  setInfoText({
+                                    rewardId: reward.reward.id,
+                                    info: 'Reward Applied',
+                                  })
+                                } else {
+                                  setInfoText({
+                                    rewardId: reward.reward.id,
+                                    error: 'Could not apply this reward',
+                                  })
                                 }
-                              } catch (e) {}
+                              } catch (e) {
+                                console.log(e)
+                              }
                               setIsBeingApplied(false)
                             }}
                           >

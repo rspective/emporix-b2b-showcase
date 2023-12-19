@@ -365,16 +365,17 @@ const CartPage = () => {
               aria-labelledby="modal-modal-title"
               aria-describedby="modal-modal-description"
               disableAutoFocus={true}
+              sx={{ overflow: 'scroll' }}
             >
               <div
                 style={{
                   position: 'absolute',
-                  top: '50%',
                   left: '50%',
-                  transform: 'translate(-50%, -50%)',
+                  transform: 'translate(-50%)',
                   fontSize: 16,
                   fontWeight: 'bold',
                   gap: 20,
+                  marginTop: 16,
                   display: 'flex',
                   flexDirection: 'column',
                   background: `white`,

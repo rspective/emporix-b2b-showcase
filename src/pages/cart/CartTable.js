@@ -206,16 +206,17 @@ const CartTable = ({ cartList, cart, classname, qualifications = [] }) => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         disableAutoFocus={true}
+        sx={{ overflow: 'scroll' }}
       >
         <div
           style={{
             position: 'absolute',
-            top: '50%',
             left: '50%',
-            transform: 'translate(-50%, -50%)',
+            transform: 'translate(-50%)',
             fontSize: 16,
             fontWeight: 'bold',
             gap: 20,
+            marginTop: 16,
             display: 'flex',
             flexDirection: 'column',
             background: `white`,
@@ -224,23 +225,23 @@ const CartTable = ({ cartList, cart, classname, qualifications = [] }) => {
             whiteSpace: `nowrap`,
           }}
         >
-          <div className='flex justify-between items-center'>
-          <span style={{ fontSize: 20, fontWeight: 'bold' }}>
-            Promotion{currentProductQualifications.length > 1 ? 's' : ''}{' '}
-            related to {productName}:
-          </span>
-          <Box
-            className="cursor-pointer"
-            sx={{
-              justifyContent: 'end',
-              justifyItems: 'end',
-              cursor: 'pointer',
-              color: '#AAABB2',
-            }}
-            onClick={() => setOpen(false)}
-          >
-            X
-          </Box>
+          <div className="flex justify-between items-center">
+            <span style={{ fontSize: 20, fontWeight: 'bold' }}>
+              Promotion{currentProductQualifications.length > 1 ? 's' : ''}{' '}
+              related to {productName}:
+            </span>
+            <Box
+              className="cursor-pointer"
+              sx={{
+                justifyContent: 'end',
+                justifyItems: 'end',
+                cursor: 'pointer',
+                color: '#AAABB2',
+              }}
+              onClick={() => setOpen(false)}
+            >
+              X
+            </Box>
           </div>
           {currentProductQualifications?.map((qualification) => (
             <Qualification

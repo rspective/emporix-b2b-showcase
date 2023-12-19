@@ -73,23 +73,24 @@ const EachProduct = ({ item, qualifications }) => {
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
           disableAutoFocus={true}
+          sx={{ overflow: 'scroll' }}
         >
           <div
             style={{
               position: 'absolute',
-              top: '50%',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
+              transform: 'translate(-50%)',
               fontSize: 16,
               fontWeight: 'bold',
               gap: 20,
+              marginTop: 16,
               display: 'flex',
               flexDirection: 'column',
               background: `white`,
               border: 0,
               padding: 32,
               whiteSpace: `nowrap`,
-              borderRadius: '4px'
+              borderRadius: '4px',
             }}
           >
             {/* <Box
@@ -110,21 +111,21 @@ const EachProduct = ({ item, qualifications }) => {
             >
               &#10060;
             </Box> */}
-            <div className='flex items-center justify-between'>
-            <span className="text-[20px]/[28px] text-eerieBlack font-semibold">
-              Promotion{qualifications.length > 1 ? 's' : ''} related to{' '}
-              {item.name}:
-            </span>
-            <span
-              className="close-button"
-              onClick={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                setOpen(false)
-              }}
-            >
-              X
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[20px]/[28px] text-eerieBlack font-semibold">
+                Promotion{qualifications.length > 1 ? 's' : ''} related to{' '}
+                {item.name}:
+              </span>
+              <span
+                className="close-button"
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setOpen(false)
+                }}
+              >
+                X
+              </span>
             </div>
             {qualifications?.map((qualification) => (
               <Qualification
@@ -211,7 +212,7 @@ const EachProduct = ({ item, qualifications }) => {
           <div>
             <LargePrimaryButton
               className="cta-button bg-yellow"
-              sx={{backgroundColor: '#FAC420 !important'}}
+              sx={{ backgroundColor: '#FAC420 !important' }}
               title={'VIEW VARIANTS'}
               onClick={handleProductDetail}
             />

@@ -64,7 +64,7 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     context,
   } = cart
 
-  if (customer) {
+  if (customer?.source_id) {
     try {
       //don't wait
       getClient().customers.create(customer)

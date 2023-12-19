@@ -4,46 +4,51 @@ import { mapEmporixItemsToVoucherifyProducts } from './voucherify/mappers/mapEmp
 
 export const buildIntegrationCartFromEmporixCart = ({
   emporixCart,
-  newCodes,
-  codesToRemove,
-  newPromotionCodes,
+  newCode,
+  codeToRemove,
+  newPromotionCode,
   customer,
   voucherifyCustomer,
   context,
+  rewardId,
 }) => {
-  const newPromotionsObjects =
-    newPromotionCodes?.map((code) => {
-      return {
-        code,
-        status: 'NEW',
-        type: 'promotion_tier',
-      }
-    }) || []
-  const newCodesObjects =
-    newCodes?.map((code) => {
-      return {
-        code,
-        status: 'NEW',
-      }
-    }) || []
+  const newPromotionsObjects = newPromotionCode
+    ? [
+        {
+          code: newPromotionCode,
+          status: 'NEW',
+          type: 'promotion_tier',
+        },
+      ]
+    : []
+  const newCodesObjects = newCode
+    ? [
+        {
+          code: newCode,
+          status: 'NEW',
+          rewardId,
+        },
+      ]
+    : []
   const currentlyAppliedCoupons = Array.isArray(
     emporixCart?.mixins?.voucherify?.appliedCoupons
   )
     ? emporixCart?.mixins?.voucherify?.appliedCoupons
     : []
-  const deletedCodesObjects =
-    codesToRemove?.map((code) => {
-      return {
-        code,
-        status: 'DELETED',
-        type: currentlyAppliedCoupons
-          .filter((coupon) => coupon.type === 'promotion_tier')
-          .map((coupon) => coupon.code)
-          .includes(code)
-          ? 'promotion_tier'
-          : 'voucher',
-      }
-    }) || []
+  const deletedCodesObjects = codeToRemove
+    ? [
+        {
+          code: codeToRemove,
+          status: 'DELETED',
+          type: currentlyAppliedCoupons
+            .filter((coupon) => coupon.type === 'promotion_tier')
+            .map((coupon) => coupon.code)
+            .includes(codeToRemove)
+            ? 'promotion_tier'
+            : 'voucher',
+        },
+      ]
+    : []
   const coupons = uniqBy(
     [
       ...deletedCodesObjects,

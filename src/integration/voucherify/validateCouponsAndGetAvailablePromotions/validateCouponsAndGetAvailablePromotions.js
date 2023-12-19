@@ -261,7 +261,8 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
       getRedeemablesByStatus(validatedCoupons.redeemables, 'APPLICABLE'),
       codesWithMissingProductsToAdd
     ),
-    promotions
+    promotions,
+    uniqueCoupons
   )
   const inapplicableCoupons = [
     ...inapplicableRedeemables,

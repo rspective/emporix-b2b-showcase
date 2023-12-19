@@ -223,11 +223,16 @@ const CartProvider = ({ children }) => {
     }
   }
 
-  const applyDiscount = async (code, customer) => {
+  const applyDiscount = async (code, customer, rewardId) => {
     if (!cartAccount?.id) {
       return { inapplicableCoupons: [] }
     }
-    const data = await CartService.applyDiscount(cartAccount.id, code, customer)
+    const data = await CartService.applyDiscount(
+      cartAccount.id,
+      code,
+      customer,
+      rewardId
+    )
     if (data.cart) {
       setCartAccount({
         ...data.cart,

@@ -39,7 +39,8 @@ export function calculateTotalDiscountAmount(validatedCoupons) {
 
 export const setBannerOnValidatedPromotions = (
   redeemables,
-  promotions = []
+  promotions = [],
+  uniqueCoupons
 ) => {
   const promotionTiersWithBanner = redeemables
     .filter((redeemable) => redeemable.object === 'promotion_tier')
@@ -49,7 +50,9 @@ export const setBannerOnValidatedPromotions = (
       )
       if (appliedPromotion) {
         redeemable['banner'] =
-          appliedPromotion?.cmsFields?.name || appliedPromotion?.banner || appliedPromotion?.name
+          appliedPromotion?.cmsFields?.name ||
+          appliedPromotion?.banner ||
+          appliedPromotion?.name
       }
 
       return redeemable
@@ -58,7 +61,15 @@ export const setBannerOnValidatedPromotions = (
   return [
     ...redeemables.filter((element) => element.object !== 'promotion_tier'),
     ...promotionTiersWithBanner,
-  ]
+  ].map((redeemable) => ({
+    ...redeemable,
+    rewardId: uniqueCoupons.find((coupon) => coupon.code === redeemable.id)
+      ?.rewardId,
+    banner: uniqueCoupons.find((coupon) => coupon.code === redeemable.id)
+      ?.rewardId
+      ? 'Pay with points'
+      : redeemable.banner,
+  }))
 }
 
 export const getPromotions = async (cart, uniqCoupons) => {

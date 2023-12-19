@@ -1,4 +1,4 @@
-import {getCustomerAdditionalMetadata} from "../../../../helpers/getCustomerAdditionalMetadata";
+import { getCustomerAdditionalMetadata } from '../../../../helpers/getCustomerAdditionalMetadata'
 
 export function buildValidationsValidateStackableParamsForVoucherify(
   coupons,
@@ -12,6 +12,13 @@ export function buildValidationsValidateStackableParamsForVoucherify(
   return {
     // options?: StackableOptions;
     redeemables: coupons.map((code) => {
+      if (code.rewardId) {
+        return {
+          object: code.type ? code.type : 'voucher',
+          reward: { id: code.rewardId },
+          id: code.code,
+        }
+      }
       return {
         object: code.type ? code.type : 'voucher',
         id: code.code,
@@ -32,7 +39,7 @@ export function buildValidationsValidateStackableParamsForVoucherify(
         ...getCustomerAdditionalMetadata(),
         preferredCurrency: customerMetadata.preferredCurrency,
         preferredLanguage: customerMetadata.preferredLanguage,
-      }
+      },
     },
     customer: cart.customer,
   }

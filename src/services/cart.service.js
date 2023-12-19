@@ -66,24 +66,25 @@ const CartService = () => {
   const applyPromotionTier = async (cartAccountId, code, customer) => {
     return await updateCart({
       emporixCartId: cartAccountId,
-      newPromotionCodes: [code],
+      newPromotionCode: code,
       customer,
       context: (await fetchContext(localStorage.getItem(TENANT)))?.data || {},
     })
   }
 
-  const applyDiscount = async (cartAccountId, code, customer) => {
+  const applyDiscount = async (cartAccountId, code, customer, rewardId) => {
     return await updateCart({
       emporixCartId: cartAccountId,
-      newCodes: [code],
+      newCode: code,
       customer,
       context: (await fetchContext(localStorage.getItem(TENANT)))?.data || {},
+      rewardId,
     })
   }
   const removeDiscount = async (cartAccountId, code, customer) => {
     return await updateCart({
       emporixCartId: cartAccountId,
-      codesToRemove: [code],
+      codeToRemove: code,
       customer,
       context: (await fetchContext(localStorage.getItem(TENANT)))?.data || {},
     })

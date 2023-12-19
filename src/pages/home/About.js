@@ -18,6 +18,7 @@ import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherif
 import { getCart } from '../../integration/emporix/emporixApi'
 import { useCart } from '../../context/cart-provider'
 import { uniqBy } from 'lodash'
+import { groupAndSortQualifications } from '../../utils/groupAndSortQualifications'
 
 const About = () => {
   const { cartAccount } = useCart()
@@ -83,11 +84,9 @@ const About = () => {
               ]))
             )
       )
-      setQualifications(
-        qualifications.sort((q1, q2) =>
-          q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
-        )
-      )
+      console.log(qualifications)
+      console.log(groupAndSortQualifications(qualifications))
+      setQualifications(groupAndSortQualifications(qualifications))
       setIsLoading(false)
     })()
   }, [user])

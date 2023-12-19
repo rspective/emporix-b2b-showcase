@@ -28,7 +28,6 @@ import {
 import { getQualificationsPerProducts } from '../../integration/voucherify/mappers/getQualificationsPerProducts'
 import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
-import { groupAndSortQualifications } from '../../utils/groupAndSortQualifications'
 
 const CartPage = () => {
   const [voucherifyCustomer, setVoucherifyCustomer] = useState()
@@ -43,12 +42,14 @@ const CartPage = () => {
   const [cartId, setCartId] = useState(undefined)
 
   const loadCustomerWalletQualifications = async (items, customer) => {
-    const customerWalletQualifications = groupAndSortQualifications(
+    const customerWalletQualifications = (
       await getQualificationsWithItemsExtended(
         'CUSTOMER_WALLET',
         items,
         customer
       )
+    ).sort((q1, q2) =>
+      q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
     )
     setCustomerWalletQualifications(customerWalletQualifications)
     return customerWalletQualifications
@@ -62,8 +63,10 @@ const CartPage = () => {
     const qualificationsIdsSoFar = allQualificationsSoFar.map(
       (qualification) => qualification.id
     )
-    const qualificationsAllScenario = groupAndSortQualifications(
+    const qualificationsAllScenario = (
       await getQualificationsWithItemsExtended('ALL', items, customer)
+    ).sort((q1, q2) =>
+      q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
     )
     setAllOtherQualifications(
       qualificationsAllScenario.filter(
@@ -77,10 +80,8 @@ const CartPage = () => {
     //We shall show promotion asap, later update promotion with more data when found.
     setBundleQualifications(bundleQualifications)
     setBundleQualifications(
-      groupAndSortQualifications(
-        await enrichBundleQualificationsByProductIdsRelatedTo(
-          bundleQualifications
-        )
+      await enrichBundleQualificationsByProductIdsRelatedTo(
+        bundleQualifications
       )
     )
   }
@@ -94,7 +95,11 @@ const CartPage = () => {
     )
     const bundleQualifications = getOnlyBundleQualifications(allQualifications)
     //don't wait
-    setBundleQualificationsEnriched(bundleQualifications)
+    setBundleQualificationsEnriched(
+      bundleQualifications.sort((q1, q2) =>
+        q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+      )
+    )
     const allQualificationsWithoutBundles =
       filterOutBundleQualifications(allQualifications)
     const allQualificationsPerProducts = getQualificationsPerProducts(
@@ -102,7 +107,9 @@ const CartPage = () => {
       productsIds
     )
     setProductQualifications(
-      groupAndSortQualifications(allQualificationsPerProducts)
+      allQualificationsPerProducts.sort((q1, q2) =>
+        q1.type === 'LOYALTY_CARD' ? -1 : q2.type === 'LOYALTY_CARD' ? 1 : -1
+      )
     )
     return allQualifications
   }

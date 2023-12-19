@@ -7,14 +7,20 @@ import { CircularProgress } from '@material-ui/core'
 import { getCart, getProduct } from '../../integration/emporix/emporixApi'
 import {
   asyncMap,
+  getCustomer,
+  getQualificationsWithItemsExtended,
   redeemReward,
 } from '../../integration/voucherify/voucherifyApi'
 import CartService from '../../services/cart.service'
 import priceService from '../../services/product/price.service'
+import category from '../home/Category'
 import pencil from '../../assets/pencil.svg'
 import pencilGreen from '../../assets/pencil_green.svg'
 import checkCircle from '../../assets/check_circle.svg'
 import { buildIntegrationCartFromEmporixCart } from '../../integration/buildIntegrationCartFromEmporixCart'
+import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
+import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
+import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
 import { useCurrency } from '../../context/currency-context'
 
 const getUserId = (user) => {

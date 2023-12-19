@@ -16,7 +16,7 @@ import EachProductRow from './EachProductRow'
 import { useAuth } from 'context/auth-provider'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
 import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
-import { groupAndSortQualifications } from '../../utils/groupAndSortQualifications'
+import { getCustomerAdditionalMetadata } from '../../helpers/getCustomerAdditionalMetadata'
 
 const ProductListViewSettingBar = ({
   changeDisplayType,
@@ -167,9 +167,7 @@ const ProductListItems = ({ products, auth, displayType }) => {
           }
         })
       })
-      setQualifications(
-        groupAndSortQualifications(allQualificationsPerProducts)
-      )
+      setQualifications(allQualificationsPerProducts)
     })()
   }, [])
 

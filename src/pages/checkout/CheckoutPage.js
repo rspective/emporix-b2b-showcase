@@ -27,7 +27,6 @@ import {
 } from '../../integration/voucherify/voucherifyApi'
 import { redeemCart } from '../../integration/voucherify/redeemCart'
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
-import { groupAndSortQualifications } from '../../utils/groupAndSortQualifications'
 
 const PaymentAction = ({ action, disabled }) => {
   return (
@@ -280,8 +279,13 @@ const CheckoutPage = () => {
         mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
       )
       setQualifications(
-        groupAndSortQualifications(
-          await getQualificationsWithItemsExtended('ALL', items, customer)
+        (await getQualificationsWithItemsExtended('ALL', items, customer)).sort(
+          (q1, q2) =>
+            q1.type === 'LOYALTY_CARD'
+              ? -1
+              : q2.type === 'LOYALTY_CARD'
+              ? 1
+              : -1
         )
       )
     })()

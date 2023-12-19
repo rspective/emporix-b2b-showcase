@@ -21,7 +21,6 @@ import { useCurrency } from 'context/currency-context'
 import { useAuth } from '../../context/auth-provider'
 import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
-import { groupAndSortQualifications } from '../../utils/groupAndSortQualifications'
 
 const ProductList = () => {
   return (
@@ -41,20 +40,18 @@ export const ProductDetails = () => {
     ;(async () => {
       const customer = mapEmporixUserToVoucherifyCustomer(user)
       setQualifications(
-        groupAndSortQualifications(
-          (
-            await getQualificationsWithItemsExtended(
-              'PRODUCTS',
-              [
-                {
-                  quantity: 1,
-                  product_id: productId,
-                },
-              ],
-              customer
-            )
-          ).filter((q) => q.type !== 'LOYALTY_CARD')
-        )
+        (
+          await getQualificationsWithItemsExtended(
+            'PRODUCTS',
+            [
+              {
+                quantity: 1,
+                product_id: productId,
+              },
+            ],
+            customer
+          )
+        ).filter((q) => q.type !== 'LOYALTY_CARD')
       )
     })()
   }, [productId])

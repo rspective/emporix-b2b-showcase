@@ -21,6 +21,7 @@ import { buildIntegrationCartFromEmporixCart } from '../../integration/buildInte
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
 import { mapEmporixItemsToVoucherifyProducts } from '../../integration/voucherify/mappers/mapEmporixItemsToVoucherifyProducts'
+import { useCurrency } from '../../context/currency-context'
 
 const getUserId = (user) => {
   return user?.id || 'anonymous'
@@ -72,6 +73,7 @@ export const Qualification = ({
   setVoucherifyCustomer,
   addToQualifications,
 }) => {
+  const { activeCurrency } = useCurrency()
   const [loyaltyBalance, setLoyaltyBalance] = useState(
     qualification.loyalty_card?.balance || 0
   )
@@ -159,7 +161,7 @@ export const Qualification = ({
     setAreProductsBeingAdded(false)
   }
 
-  const apply = async (code, user) => {
+  const apply = async (code, user, rewardId) => {
     if (!code || isBeingApplied) {
       return
     }
@@ -170,7 +172,7 @@ export const Qualification = ({
         code instanceof Object && 'reward' in code
           ? await applyReward(code, user)
           : qualification.object === 'voucher'
-          ? await applyDiscount(code, user)
+          ? await applyDiscount(code, user, rewardId)
           : await applyPromotion(code, user)
       if (result.inapplicableCoupons?.length) {
         const { inapplicableCoupons } = result
@@ -309,6 +311,64 @@ export const Qualification = ({
                       ? 'Rewards:'
                       : 'No rewards found'}
                   </Box>
+                  {(qualification.rewards || [])
+                    .filter((reward) => reward?.reward?.type === 'COIN')
+                    .map((reward) => (
+                      <Box key={reward.reward.id}>
+                        {console.log(reward)}
+                        {console.log(activeCurrency)}
+                        <Box>
+                          {reward.reward.name}
+                          {reward?.reward?.parameters?.coin && (
+                            <>
+                              <br />
+                              {reward?.reward?.parameters?.coin.exchange_ratio?.toString()}
+                              {activeCurrency?.symbol} for{' '}
+                              {reward?.reward?.parameters?.coin.points_ratio}{' '}
+                              points points
+                            </>
+                          )}
+                        </Box>
+                        <Box>
+                          <Button
+                            className="cta-button"
+                            title="Apply Coupon"
+                            disabled={
+                              isBeingApplied || alreadyAppliedCodes.length >= 5
+                            }
+                            variant={'contained'}
+                            sx={{
+                              mt: 1,
+                              mb: '14px',
+                              borderRadius: 0,
+                              backgroundColor: '#FAC420',
+                              '&:hover': {
+                                backgroundColor: '#FAC420',
+                              },
+                            }}
+                            onClick={() =>
+                              alreadyAppliedCodes.length < 5 &&
+                              apply(
+                                qualification.object === 'voucher'
+                                  ? qualification.code
+                                  : qualification.id,
+                                user,
+                                reward.reward.id
+                              )
+                            }
+                          >
+                            <img
+                              src={pencil}
+                              className="w-4 h-4 mr-4"
+                              alt="pencil"
+                            />
+                            {alreadyAppliedCodes.length >= 5
+                              ? 'You have reached coupon limit'
+                              : 'Apply'}
+                          </Button>
+                        </Box>
+                      </Box>
+                    ))}
                   {(qualification.rewards || [])
                     .filter((reward) => reward?.reward?.type !== 'COIN')
                     .map((reward) => (

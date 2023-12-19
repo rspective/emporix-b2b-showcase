@@ -28,6 +28,10 @@
             "type": ["string", "null"],
             "description": "Type"
           },
+          "rewardId" : {
+            "type": ["string", "null"],
+            "description": "Type"
+          },
           "banner" : {
             "type": ["string", "null"],
             "description": "Banner"

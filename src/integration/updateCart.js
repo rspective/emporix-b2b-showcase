@@ -9,14 +9,16 @@ import {
 import { buildIntegrationCartFromEmporixCart } from './buildIntegrationCartFromEmporixCart'
 import { validateCouponsAndGetAvailablePromotions } from './voucherify/validateCouponsAndGetAvailablePromotions/validateCouponsAndGetAvailablePromotions'
 import { getDiscountsValues } from './voucherify/mappers/getDiscountsValues'
+import { compact } from 'lodash'
 
 export const updateCart = async ({
   emporixCartId,
-  newCodes,
-  codesToRemove,
-  newPromotionCodes,
+  newCode,
+  codeToRemove,
+  newPromotionCode,
   customer,
   context,
+  rewardId,
 }) => {
   if (!emporixCartId) {
     return {
@@ -29,11 +31,12 @@ export const updateCart = async ({
     const validationResult = await validateCouponsAndGetAvailablePromotions(
       buildIntegrationCartFromEmporixCart({
         emporixCart,
-        newCodes,
-        codesToRemove,
-        newPromotionCodes,
+        newCode,
+        codeToRemove,
+        newPromotionCode,
         customer,
         context,
+        rewardId,
       })
     )
     const { applicableCoupons } = validationResult
@@ -49,7 +52,7 @@ export const updateCart = async ({
     await updateCartMetadataMixins(
       emporixCart,
       validationResult,
-      codesToRemove,
+      compact([codeToRemove]),
       discountsDetails
     )
     if (applicableCoupons.length > 0) {

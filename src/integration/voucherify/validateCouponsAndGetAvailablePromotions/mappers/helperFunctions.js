@@ -65,6 +65,10 @@ export const setBannerOnValidatedPromotions = (
     ...redeemable,
     rewardId: uniqueCoupons.find((coupon) => coupon.code === redeemable.id)
       ?.rewardId,
+    banner: uniqueCoupons.find((coupon) => coupon.code === redeemable.id)
+      ?.rewardId
+      ? 'Pay with points'
+      : redeemable.banner,
   }))
 }
 

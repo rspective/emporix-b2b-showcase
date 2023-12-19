@@ -249,6 +249,7 @@ export const Qualification = ({
             </span>
           </Box>
         )}
+        {isLoyalty && isAlreadyApplied ? <Box>Pay with points</Box> : undefined}
         <Box
           sx={{
             display: 'flex',

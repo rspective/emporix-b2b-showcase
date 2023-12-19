@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import currencyService from 'services/currency.service'
 import { useAppContext } from './app-context'
 import { useSites } from './sites-provider'
+import { useCart } from './cart-provider'
 
 const CurrencyContext = createContext({})
 
@@ -19,7 +20,7 @@ const CurrencyProvider = ({ children }) => {
     const currencyListWithSymbol = currencies.map((c) => {
       return {
         code: c.code,
-        symbol: getSymbolFromCurrency(c.code),
+        symbol: c.code, //getSymbolFromCurrency(c.code),
       }
     })
     setCurrencyList(currencyListWithSymbol)
@@ -38,7 +39,7 @@ const CurrencyProvider = ({ children }) => {
   const updateCurrency = async (value, site) => {
     setActiveCurrency({
       code: value,
-      symbol: getSymbolFromCurrency(value),
+      symbol: value, // getSymbolFromCurrency(value),
     })
 
     await updateContext({

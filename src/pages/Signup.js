@@ -245,6 +245,8 @@ const Signup = (props) => {
               await createAddress({ ...billingAddress, tags: ['billing'] })
               setBillingAddressCreated(true)
             }
+            const user = await login(userEmail, password, tenant)
+            syncAuth(user)
             if (isSignedUp && shippingAddressCreated && billingAddressCreated) {
               props.history.replace(`/${tenant}`)
             }

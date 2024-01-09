@@ -99,22 +99,12 @@ const CartTable = ({ cartList, cart, classname, qualifications = [] }) => {
               const discountDetails = discountsDetails.find(
                 (discountDetails) => discountDetails.source_id === itemId
               )
-              const discount = discountDetails?.discount
-                ? discountDetails.discount / 100
+              const discount = discountDetails?.applied_discount_amount
+                ? discountDetails.applied_discount_amount / 100
                 : 0
-              const amount = discountDetails?.amount
-                ? discountDetails.amount / 100
-                : Math.round(
-                    cartItem.product.price.originalAmount * cartItem.quantity +
-                      cartItem.product.price.originalAmount *
-                        cartItem.quantity *
-                        (cartItem.itemTaxInfo[0].rate / 100)
-                  )
-              const currentProductQualifications =
-                qualifications.find(
-                  (qualificationWithProductId) =>
-                    qualificationWithProductId?.productId === itemId
-                )?.qualifications || []
+              const totalPrice = cartItem.itemTaxInfo?.[0]?.grossValue
+                ? cartItem.itemTaxInfo[0].grossValue - discount
+                : undefined
               return (
                 <TableRow
                   key={index}
@@ -181,10 +171,7 @@ const CartTable = ({ cartList, cart, classname, qualifications = [] }) => {
                   </TableCell>
 
                   <TableCell className="cart-row-item">
-                    <PriceExcludeVAT
-                      price={amount - discount}
-                      caption="incl. VAT"
-                    />
+                    <PriceExcludeVAT price={totalPrice} caption="incl. VAT" />
                   </TableCell>
 
                   <TableCell className="cart-row-item">

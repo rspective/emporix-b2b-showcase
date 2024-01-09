@@ -8,7 +8,6 @@ import {
 } from './emporix/emporixApi'
 import { buildIntegrationCartFromEmporixCart } from './buildIntegrationCartFromEmporixCart'
 import { validateCouponsAndGetAvailablePromotions } from './voucherify/validateCouponsAndGetAvailablePromotions/validateCouponsAndGetAvailablePromotions'
-import { getDiscountsValues } from './voucherify/mappers/getDiscountsValues'
 import { compact } from 'lodash'
 
 export const updateCart = async ({

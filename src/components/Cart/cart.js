@@ -34,7 +34,7 @@ export const PriceExcludeVAT = ({ price, caption }) => {
   return (
     <div className="price-exclude-vat">
       <div className="">
-        <CurrencyBeforeValue value={price} />
+        {price ? <CurrencyBeforeValue value={price} /> : '-'}
       </div>
       <div className="caption">
         {caption === undefined ? 'ex. VAT' : caption}

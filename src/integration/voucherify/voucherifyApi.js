@@ -37,14 +37,14 @@ const getQualificationsWithItems = async (
           : 'BASIC', // hidden: BASIC, ADVANCED
       order: {
         items,
-        customer,
+        customer: customer || {},
         metadata: {
           ...getCustomerAdditionalMetadata(),
           preferredCurrency: customerMetadata.preferredCurrency,
           preferredLanguage: customerMetadata.preferredLanguage,
         },
       },
-      customer,
+      customer: customer || {},
       options: {
         limit: 100,
         ignore_rules_cache: true, // hidden,

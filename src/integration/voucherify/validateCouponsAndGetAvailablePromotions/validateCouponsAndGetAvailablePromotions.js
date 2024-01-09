@@ -276,6 +276,7 @@ export const validateCouponsAndGetAvailablePromotions = async (cart) => {
     inapplicableCoupons,
     newSessionKey: validatedCoupons?.session?.key ?? null,
     totalDiscountAmount: calculateTotalDiscountAmount(validatedCoupons),
+    order: validatedCoupons.order,
     productsToAdd,
     allInapplicableCouponsArePromotionTier:
       applicableCoupons.length || inapplicableCoupons.length

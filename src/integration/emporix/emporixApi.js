@@ -125,7 +125,7 @@ export const updateCartMetadataMixins = async (
     ...(emporixCart?.metadata?.mixins || {}),
   }
   mixinsSchema.voucherify =
-    'https://raw.githubusercontent.com/rspective/emporix-b2b-showcase/pz/pay-with-points/src/integration/emporix/voucherify.json'
+    'https://raw.githubusercontent.com/rspective/emporix-b2b-showcase/pz/fix-discounts/src/integration/emporix/voucherify.json'
   //this corrects past misconfiguration
   mixinsSchema.sessionKey = undefined
   mixinsSchema.appliedCoupons = undefined
@@ -153,7 +153,11 @@ export const updateCartMetadataMixins = async (
           }
         }),
       availablePromotions,
-      discountsDetails,
+      discountsDetails: discountsDetails.map((discount) => ({
+        source_id: discount.source_id,
+        applied_discount_amount: discount.applied_discount_amount,
+        quantity: discount.quantity,
+      })),
     },
   }
   const emporixAccessToken = await getEmporixAPIAccessToken()

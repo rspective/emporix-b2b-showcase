@@ -39,9 +39,8 @@ export const updateCart = async ({
         rewardId,
       })
     )
-    const { applicableCoupons } = validationResult
+    const { applicableCoupons, order } = validationResult
     const { items } = buildIntegrationCartFromEmporixCart({ emporixCart })
-    const discountsDetails = getDiscountsValues(applicableCoupons, items)
     if (emporixCart.discounts?.length) {
       await removeAllDiscountsFromCart(emporixCart.id)
       emporixCart.discounts.forEach((discount) => {
@@ -53,7 +52,7 @@ export const updateCart = async ({
       emporixCart,
       validationResult,
       compact([codeToRemove]),
-      discountsDetails
+      order?.items || []
     )
     if (applicableCoupons.length > 0) {
       const createdCoupon = await createCoupon(

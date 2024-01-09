@@ -114,7 +114,9 @@ const CartTable = ({ cartList, cart, classname, qualifications = [] }) => {
                     <CartProductInfo cart={cartItem} />
                   </TableCell>
                   <TableCell className="cart-row-item">
-                    {currentProductQualifications.length ? (
+                    {qualifications.find(
+                      (q) => q?.productId && q.productId === itemId
+                    )?.qualifications?.length ? (
                       <Box
                         className="shopping-cart_promotions-label"
                         sx={{
@@ -127,8 +129,17 @@ const CartTable = ({ cartList, cart, classname, qualifications = [] }) => {
                         }}
                         onClick={() => setOpen(itemId)}
                       >
-                        {currentProductQualifications.length} promotion
-                        {currentProductQualifications.length > 1 ? 's' : ''}
+                        {
+                          qualifications.find(
+                            (q) => q?.productId && q.productId === itemId
+                          )?.qualifications?.length
+                        }{' '}
+                        promotion
+                        {qualifications.find(
+                          (q) => q?.productId && q.productId === itemId
+                        )?.qualifications > 1
+                          ? 's'
+                          : ''}
                       </Box>
                     ) : undefined}
                   </TableCell>

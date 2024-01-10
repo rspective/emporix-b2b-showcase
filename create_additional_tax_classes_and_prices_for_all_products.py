@@ -10,6 +10,7 @@ country2 = "CA"
 tenant = os.getenv('REACT_APP_EMPORIX_TENANT')
 client_id = os.getenv('REACT_APP_EMPORIX_CLIENT_ID')
 client_secret = os.getenv('REACT_APP_EMPORIX_CLIENT_SECRET')
+main_currency = os.getenv('EMPORIX_MAIN_CURRENCY')
 
 base_url = "https://api.emporix.io"
 ca_tax_class = "ZERO"
@@ -79,7 +80,7 @@ for product in all_products:
 
 
     # Step 4: Get the product tier value prices from the main site in euro for the product
-    price_url = f"{base_url}/price/{tenant}/prices/?siteCode=main&country=DE&currency=USD&itemId={product_id}"
+    price_url = f"{base_url}/price/{tenant}/prices/?siteCode=main&country=DE&currency={main_currency}&itemId={product_id}"
     price_response = requests.get(price_url, headers=headers)
     print(3, price_response)
     priceResponseJson = price_response.json()

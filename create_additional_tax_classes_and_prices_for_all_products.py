@@ -43,13 +43,25 @@ def handle_response_error(response):
     if not response.ok:
         raise Exception(f"Error with request: {response.status_code} {response.reason} - {response.text}")
 
-# Step 1: Get the first 1000 products
-product_url = f"{base_url}/product/{tenant}/products?sort=name:DESC&pageNumber=1&pageSize=1000&q="
-response = requests.get(product_url, headers=headers)
-handle_response_error(response)
-products = response.json()
+# Step 1: Get the first 666000 products
+all_products = []
 
-for product in products:
+for page_number in range(1, 666):
+    product_url = f"{base_url}/product/{tenant}/products?sort=name:DESC&pageNumber={page_number}&pageSize=1000&q="
+    response = requests.get(product_url, headers=headers)
+
+    if response.status_code == 200:
+        products = response.json()
+        if(len(products) == 0):
+            break
+        all_products.extend(products)
+    else:
+        handle_response_error(response)
+        break
+
+print (len(all_products))
+
+for product in all_products:
     product_id = product["id"]
 
     # Step 2: Get the taxClasses of the product

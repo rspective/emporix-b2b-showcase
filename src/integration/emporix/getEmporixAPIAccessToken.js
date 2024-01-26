@@ -1,7 +1,12 @@
-let emporixAccessToken
-let emporixAccessTokenExpiresAt
+import { TENANT } from '../../constants/localstorage'
 
 export const getEmporixAPIAccessToken = async () => {
+  const emporixAccessToken = localStorage.getItem('emporixAccessToken')
+  const emporixAccessTokenExpiresAt = localStorage.getItem(
+    'emporixAccessTokenExpiresAt'
+  )
+    ? parseInt(localStorage.getItem('emporixAccessTokenExpiresAt'))
+    : null
   if (
     !isNaN(emporixAccessTokenExpiresAt) &&
     typeof emporixAccessTokenExpiresAt === 'number' &&
@@ -14,6 +19,7 @@ export const getEmporixAPIAccessToken = async () => {
     client_id: process.env.REACT_APP_EMPORIX_CLIENT_ID,
     client_secret: process.env.REACT_APP_EMPORIX_CLIENT_SECRET,
     grant_type: 'client_credentials',
+    scope: `tenant=${localStorage.getItem(TENANT)}`,
   }
   try {
     const responseRaw = await fetch(
@@ -33,12 +39,15 @@ export const getEmporixAPIAccessToken = async () => {
     }
     const responseJSON = await responseRaw.json()
     const { expires_in, access_token: newAccessToken } = responseJSON
-    emporixAccessToken = newAccessToken
-    emporixAccessTokenExpiresAt =
-      new Date().getTime() + (expires_in - 180) * 1000 //180 second error margin
+    localStorage.setItem('emporixAccessToken', newAccessToken)
+    localStorage.setItem(
+      'emporixAccessTokenExpiresAt',
+      //180 second error margin
+      new Date().getTime() + (expires_in - 180) * 1000
+    )
     return newAccessToken
   } catch (e) {
-    console.log(e)
+    console.log(111, e)
     throw 'could not get emporix access token'
   }
 }

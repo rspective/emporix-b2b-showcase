@@ -211,8 +211,8 @@ export const createOrder = async (request) => {
   return await getClient().orders.create(request)
 }
 
-export const getCustomer = async (customerId) => {
-  return await getClient().customers.get(customerId)
+export const createCustomer = async (customerId) => {
+  return await getClient().customers.create({ source_id: customerId })
 }
 
 export const listLoyaltyTierRewards = async (memberId) => {

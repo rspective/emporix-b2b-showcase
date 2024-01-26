@@ -22,7 +22,7 @@ import { Qualification } from '../shared/Qualification'
 import { getCart } from '../../integration/emporix/emporixApi'
 import { mapItemsToVoucherifyOrdersItems } from '../../integration/voucherify/validateCouponsAndGetAvailablePromotions/mappers/product'
 import {
-  getCustomer,
+  createCustomer,
   getQualificationsWithItemsExtended,
 } from '../../integration/voucherify/voucherifyApi'
 import { redeemCart } from '../../integration/voucherify/redeemCart'
@@ -266,7 +266,7 @@ const CheckoutPage = () => {
       const customer = mapEmporixUserToVoucherifyCustomer(user)
       if (customer?.source_id) {
         try {
-          const voucherifyCustomer = await getCustomer(customer.source_id)
+          const voucherifyCustomer = await createCustomer(customer.source_id)
           if (voucherifyCustomer.id) {
             setVoucherifyCustomer(voucherifyCustomer)
           }

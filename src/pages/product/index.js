@@ -21,6 +21,8 @@ import { useCurrency } from 'context/currency-context'
 import { useAuth } from '../../context/auth-provider'
 import { getQualificationsWithItemsExtended } from '../../integration/voucherify/voucherifyApi'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
+import CircularProgress from '@mui/material/CircularProgress'
+import Box from '@mui/material/Box'
 
 const ProductList = () => {
   return (
@@ -167,13 +169,22 @@ export const ProductDetails = () => {
     <Layout title={''}>
       {product.loading ? (
         <LoadingCircleProgress1 />
-      ) : (
+      ) : product.data ? (
         <ProductDetailPage
           product={product.data}
           brand={brand}
           labels={labels}
           qualifications={qualifications}
         />
+      ) : (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="50vh"
+        >
+          Product not found
+        </Box>
       )}
     </Layout>
   )

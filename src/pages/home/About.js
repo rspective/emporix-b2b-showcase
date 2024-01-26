@@ -5,7 +5,7 @@ import { useAuth } from '../../context/auth-provider'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
 import { Box } from '@mui/system'
 import {
-  getCustomer,
+  createCustomer,
   getQualificationsWithItemsExtended,
   listLoyaltyTierRewards,
   listMemberLoyaltyTiers,
@@ -49,12 +49,12 @@ const About = () => {
       const customer = mapEmporixUserToVoucherifyCustomer(user)
       if (customer?.source_id) {
         try {
-          const voucherifyCustomer = await getCustomer(customer.source_id)
+          const voucherifyCustomer = await createCustomer(customer.source_id)
           if (voucherifyCustomer.id) {
             setVoucherifyCustomer(voucherifyCustomer)
           }
-        } catch (err) {
-          console.log(err)
+        } catch (error) {
+          console.log({ error })
         }
       }
       const emporixCart = cartAccount?.id ? await getCart(cartAccount.id) : {}
@@ -81,7 +81,8 @@ const About = () => {
                   customer || voucherifyCustomer
                 ),
               ]))
-            )
+            ),
+        'id'
       )
       setQualifications(
         qualifications.sort((q1, q2) =>
@@ -90,7 +91,7 @@ const About = () => {
       )
       setIsLoading(false)
     })()
-  }, [user])
+  }, [cartAccount, user])
 
   return (
     <>

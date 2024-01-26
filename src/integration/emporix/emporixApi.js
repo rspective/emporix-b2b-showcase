@@ -203,5 +203,10 @@ export const getCart = async (cartId) => {
     console.log('error', cartRaw)
     return {}
   }
-  return await cartRaw.json()
+  try {
+    return await cartRaw.json()
+  } catch (error) {
+    console.log({ error })
+    return {}
+  }
 }

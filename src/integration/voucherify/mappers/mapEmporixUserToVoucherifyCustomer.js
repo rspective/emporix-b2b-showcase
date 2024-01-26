@@ -1,6 +1,6 @@
 export const mapEmporixUserToVoucherifyCustomer = (user) => {
   if (!(user instanceof Object)) {
-    return undefined
+    return {}
   }
   const customer = {
     source_id: user.id ? `emporix-user-${user.id}` : undefined,

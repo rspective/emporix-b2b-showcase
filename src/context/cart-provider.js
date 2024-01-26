@@ -198,28 +198,32 @@ const CartProvider = ({ children }) => {
   )
 
   const recheckCart = async () => {
-    const user = JSON.parse(localStorage.getItem(USER))
-    const customerAdditionalMetadata = getCustomerAdditionalMetadata()
-    if (!cartAccount?.id) {
-      return {
-        inapplicableCoupons: [],
+    try {
+      const user = JSON.parse(localStorage.getItem(USER))
+      const customerAdditionalMetadata = getCustomerAdditionalMetadata()
+      if (!cartAccount?.id) {
+        return {
+          inapplicableCoupons: [],
+        }
       }
-    }
-    const cartAndInapplicableCoupons = await CartService.recheckCart(
-      cartAccount.id,
-      user || {},
-      customerAdditionalMetadata || {}
-    )
-    if (cartAndInapplicableCoupons.cart) {
-      setCartAccount({
-        ...cartAndInapplicableCoupons.cart,
-        items: await getCartList(cartAndInapplicableCoupons.cart.items || []),
-      })
-    }
-    if (cartAndInapplicableCoupons.inapplicableCoupons) {
-      return {
-        inapplicableCoupons: cartAndInapplicableCoupons.inapplicableCoupons,
+      const cartAndInapplicableCoupons = await CartService.recheckCart(
+        cartAccount.id,
+        user || {},
+        customerAdditionalMetadata || {}
+      )
+      if (cartAndInapplicableCoupons.cart) {
+        setCartAccount({
+          ...cartAndInapplicableCoupons.cart,
+          items: await getCartList(cartAndInapplicableCoupons.cart.items || []),
+        })
       }
+      if (cartAndInapplicableCoupons.inapplicableCoupons) {
+        return {
+          inapplicableCoupons: cartAndInapplicableCoupons.inapplicableCoupons,
+        }
+      }
+    } catch (error) {
+      console.error({ error })
     }
   }
 

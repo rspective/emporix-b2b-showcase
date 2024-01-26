@@ -13,7 +13,7 @@ import { Box } from '@mui/system'
 import { useAuth } from '../../context/auth-provider'
 import { mapEmporixUserToVoucherifyCustomer } from '../../integration/voucherify/mappers/mapEmporixUserToVoucherifyCustomer'
 import {
-  getCustomer,
+  createCustomer,
   getQualificationsWithItemsExtended,
 } from '../../integration/voucherify/voucherifyApi'
 import useMediaQuery from '@mui/material/useMediaQuery'
@@ -126,31 +126,35 @@ const CartPage = () => {
   }, [cartAccount?.items, user])
 
   const setQualifications = async () => {
-    if (!cartAccount?.id) {
-      return
-    }
-    const customer = mapEmporixUserToVoucherifyCustomer(user)
-    if (customer.source_id) {
-      try {
-        const voucherifyCustomer = await getCustomer(customer.source_id)
-        if (voucherifyCustomer.id) {
-          setVoucherifyCustomer(voucherifyCustomer)
-        }
-      } catch (err) {
-        console.log(err)
+    try {
+      if (!cartAccount?.id) {
+        return
       }
+      const customer = mapEmporixUserToVoucherifyCustomer(user)
+      if (customer.source_id) {
+        try {
+          const voucherifyCustomer = await createCustomer(customer.source_id)
+          if (voucherifyCustomer.id) {
+            setVoucherifyCustomer(voucherifyCustomer)
+          }
+        } catch (err) {
+          console.log(err)
+        }
+      }
+      const emporixCart = await getCart(cartAccount.id)
+      const items = mapItemsToVoucherifyOrdersItems(
+        mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
+      )
+      const allQualificationsSoFar = [].concat(
+        ...(await Promise.all([
+          await setProductsQualificationsFunction(items, customer),
+          await loadCustomerWalletQualifications(items, customer),
+        ]))
+      )
+      await loadALLQualifications(items, customer, allQualificationsSoFar)
+    } catch (err) {
+      console.log(123, err)
     }
-    const emporixCart = await getCart(cartAccount.id)
-    const items = mapItemsToVoucherifyOrdersItems(
-      mapEmporixItemsToVoucherifyProducts(emporixCart?.items || [])
-    )
-    const allQualificationsSoFar = [].concat(
-      ...(await Promise.all([
-        await setProductsQualificationsFunction(items, customer),
-        await loadCustomerWalletQualifications(items, customer),
-      ]))
-    )
-    await loadALLQualifications(items, customer, allQualificationsSoFar)
   }
 
   useEffect(() => {

@@ -7,7 +7,6 @@ import { CircularProgress } from '@material-ui/core'
 import { getCart, getProduct } from '../../integration/emporix/emporixApi'
 import {
   asyncMap,
-  getCustomer,
   getQualificationsWithItemsExtended,
   redeemReward,
 } from '../../integration/voucherify/voucherifyApi'

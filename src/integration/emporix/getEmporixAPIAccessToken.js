@@ -1,5 +1,3 @@
-import { TENANT } from '../../constants/localstorage'
-
 export const getEmporixAPIAccessToken = async () => {
   const emporixAccessToken = localStorage.getItem('emporixAccessToken')
   const emporixAccessTokenExpiresAt = localStorage.getItem(
@@ -19,7 +17,6 @@ export const getEmporixAPIAccessToken = async () => {
     client_id: process.env.REACT_APP_EMPORIX_CLIENT_ID,
     client_secret: process.env.REACT_APP_EMPORIX_CLIENT_SECRET,
     grant_type: 'client_credentials',
-    scope: `tenant=${localStorage.getItem(TENANT)}`,
   }
   try {
     const responseRaw = await fetch(
